@@ -1,4 +1,4 @@
-//Move all this to .env
+// Move all this to .env
 import { initializeApp } from "firebase/app";
 
 const firebaseConfig = {
@@ -10,7 +10,8 @@ const firebaseConfig = {
     appId: "1:943355489638:web:6e608813cb8088a39e6ca7"
 };
 
-const PORT = 5000;
+// Gets port from Heroku
+const PORT = process.env.PORT;
 
 const firebaseApp = initializeApp(firebaseConfig);
 
