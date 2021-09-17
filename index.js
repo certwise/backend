@@ -18,7 +18,7 @@ app.use(bodyParser.json())
 app.use('/template', templateRoute)
 app.use('/certificate', certificateRoute)
 
-app.listen(env.PORT, () => console.log(`Server started at port ${env.PORT}`))
+app.listen(env.PORT || 5000, () => console.log(`Server started at port ${env.PORT || 5000}`))
 
 
 const clearFontsDir = () => {

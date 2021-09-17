@@ -24,12 +24,18 @@ export const getLoadedImage = (item) => {
             getDownloadURL(ref(getStorage(), item.storageRef))
                 .then(url => {
                     konva.Image.fromURL(url, image => {
-                        image.width(item.width)
-                        image.height(item.height)
-
-                        image.x(item.x)
-                        image.y(item.y)
-                        image.id = item.id
+                        if (item.type === 'base-image') {
+                            image.x(0)
+                            image.y(0)
+                            image.width(item['original-width'])
+                            image.height(item['original-height'])
+                        } else {
+                            image.x(item.x)
+                            image.y(item.y)
+                            image.width(item.width)
+                            image.height(item.height)
+                        }
+                        console.log(image)
                         resolve(image)
                         return image
                     })

@@ -1,15 +1,3 @@
-//get template from firestore
-//Before creating konva stage, set all fonts to canvas
-//get all items from firestore
-//load font links from items
-//load images from item's images
-//push to layer
-//set stage size from base-image
-//set stage position
-//generate image from stage
-// save image to firebase storage
-// save image data to firestore
-// delete local stored images
 import { getFirestore, collection, addDoc, getDoc, getDocs, query, where, setDoc, doc, deleteDoc } from 'firebase/firestore'
 import { getStorage, getDownloadURL, uploadBytes, deleteObject, ref } from "firebase/storage";
 import { getTemplate, getAllFontsFromTemplate, getLoadedImage, getLoadedText } from "./templateFunctions.js"
@@ -21,7 +9,6 @@ export const getTemplateImage = (templateId, fields) => {
     return new Promise((resolve, reject) => {
         let fontDir = ''
         let template = { canvas: { items: [] } }
-        let buffer_ = ''
         //let randomId = makeid(20)
         let pathDir = `./storage/fonts/`
         getTemplate(templateId)
@@ -56,30 +43,20 @@ export const getTemplateImage = (templateId, fields) => {
                 let layer = new konva.Layer()
                 stage.x(0)
                 stage.y(0)
-                stage.height(template.canvas.items.find(item => item.type === "base-image").height / 10)
-                stage.width(template.canvas.items.find(item => item.type === "base-image").width / 10)
-                stage.scaleX(0.1)
-                stage.scaleY(0.1)
+                stage.height(template.canvas.items.find(item => item.type === "base-image")['original-height'])
+                stage.width(template.canvas.items.find(item => item.type === "base-image")['original-width'])
+                stage.scaleX(1)
+                stage.scaleY(1)
                 stage.add(layer)
                 items.forEach(item =>
                     layer.add(item)
                 )
-                stage.add(layer)
-                let img = stage.toDataURL({ pixelRatio: 2, mimeType: 'image/jpeg' })
+                let img = stage.toDataURL({ pixelRatio: 3, mimeType: 'image/jpeg' })
                 console.log("Items loaded into Konva layer by toDataURL()")
                 var data = img.replace(/^data:image\/\w+;base64,/, "")
                 var buffer = Buffer.from(data, 'base64')
-                buffer_ = buffer
                 console.log(`pathDir: ${pathDir}`)
                 stage = null
-                canvas.r
-                // try {
-                //     //deleteDir('./storage/fonts')
-                //     console.log(`!${pathDir}`)
-                //     del.sync([`./storage/fonts/**`][`!${pathDir}`])
-                // } catch (e) {
-                //     console.log('e')
-                // }
                 resolve(buffer)
             }).then((res) => {
                 console.log("fonts folder deleted")
