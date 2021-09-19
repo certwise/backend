@@ -1,9 +1,10 @@
-import { getFirestore, collection, addDoc, getDoc, getDocs, query, where, setDoc, doc, deleteDoc } from 'firebase/firestore'
-import { getStorage, getDownloadURL, uploadBytes, deleteObject, ref } from "firebase/storage";
+import { getFirestore, getDoc, doc } from 'firebase/firestore'
+import { getStorage, getDownloadURL, ref } from "firebase/storage";
 import fs from 'fs'
 import env from '../config.js'
 import konva from 'konva'
 import axios from 'axios'
+
 /***
  * Get template object from firestore with given **templateId**
  */
@@ -150,7 +151,89 @@ const getExistingFonts = (path, family) => {
     return new Promise((resolve, r) => resolve({ path: path, family: family }))
 }
 
-const makeid = (length) => {
+export const getTemplateImage = (templateId, fields) => {
+    return new Promise((resolve, reject) => {
+        let fontDir = ''
+        let template = { canvas: { items: [] } }
+        //let randomId = makeid(20)
+        let pathDir = `./storage/fonts/`
+        getTemplate(templateId)
+            .then(temp => {
+                template = temp.data()
+                console.log(Object.keys(template))
+                return getAllFontsFromTemplate(template, pathDir)
+            })
+            .then(fontsObj => {
+                console.log(fontsObj)
+                console.log("fonts loaded to storage")
+                fontsObj.forEach(obj => {
+                    fontDir = obj.folder
+                    canvas.registerFont(obj.path, { family: obj.family })
+                })
+                let promises = []
+                template.canvas.items.map((item) => {
+                    console.log(item.type)
+                    if (item.type === 'text') {
+                        if (item.isConstant)
+                            promises.push(getLoadedText(item, item.value))
+                        else
+                            promises.push(getLoadedText(item, fields[item.value]))
+                    }
+                    if (item.type === 'image' || item.type === 'base-image') {
+                        promises.push(getLoadedImage(item))
+                    }
+                })
+                return Promise.all(promises)
+            }).then(items => {
+                let stage = new konva.Stage()
+                let layer = new konva.Layer()
+                stage.x(0)
+                stage.y(0)
+                stage.height(template.canvas.items.find(item => item.type === "base-image")['original-height'])
+                stage.width(template.canvas.items.find(item => item.type === "base-image")['original-width'])
+                stage.scaleX(1)
+                stage.scaleY(1)
+                stage.add(layer)
+                items.forEach(item =>
+                    layer.add(item)
+                )
+                let img = stage.toDataURL({ pixelRatio: 3, mimeType: 'image/jpeg' })
+                console.log("Items loaded into Konva layer by toDataURL()")
+                var data = img.replace(/^data:image\/\w+;base64,/, "")
+                var buffer = Buffer.from(data, 'base64')
+                console.log(`pathDir: ${pathDir}`)
+                stage = null
+                resolve(buffer)
+            }).then((res) => {
+                console.log("fonts folder deleted")
+            })
+            .catch(err => {
+                reject(err)
+            })
+    })
+}
+
+export const getTemplateFields = (templateId) => {
+    return new Promise((resolve, reject) => {
+        getTemplate(templateId)
+            .then(template => {
+                let data = template.data()
+                console.log("Data:", Object.keys(data))
+                let fields = []
+                data.canvas.items.forEach(item => {
+                    if (!item.isConstant && item.type === 'text')
+                        fields.push(item.value)
+                })
+                console.log(fields)
+                resolve(fields)
+            }).catch(err => {
+                reject(err)
+            })
+    })
+}
+
+
+export const makeid = (length) => {
     let result = ''
     let characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'
     let charactersLength = characters.length

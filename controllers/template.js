@@ -1,104 +1,95 @@
-import { getFirestore, collection, addDoc, getDoc, getDocs, query, where, setDoc, doc, deleteDoc } from 'firebase/firestore'
+import { getTemplateFields, makeid } from './templateFunctions.js'
+import { getFirestore, collection, addDoc, getDoc, getDocs, query, where, setDoc, doc, deleteDoc } from "firebase/firestore";
 import { getStorage, getDownloadURL, uploadBytes, deleteObject, ref } from "firebase/storage";
-import { getTemplate, getAllFontsFromTemplate, getLoadedImage, getLoadedText } from "./templateFunctions.js"
-import canvas from "canvas"
-import konva from "konva"
-import fs from "fs"
-import del from "del"
-export const getTemplateImage = (templateId, fields) => {
-    return new Promise((resolve, reject) => {
-        let fontDir = ''
-        let template = { canvas: { items: [] } }
-        //let randomId = makeid(20)
-        let pathDir = `./storage/fonts/`
-        getTemplate(templateId)
-            .then(temp => {
-                template = temp.data()
-                console.log(Object.keys(template))
-                return getAllFontsFromTemplate(template, pathDir)
-            })
-            .then(fontsObj => {
-                console.log(fontsObj)
-                console.log("fonts loaded to storage")
-                fontsObj.forEach(obj => {
-                    fontDir = obj.folder
-                    canvas.registerFont(obj.path, { family: obj.family })
-                })
-                let promises = []
-                template.canvas.items.map((item) => {
-                    console.log(item.type)
-                    if (item.type === 'text') {
-                        if (item.isConstant)
-                            promises.push(getLoadedText(item, item.value))
-                        else
-                            promises.push(getLoadedText(item, fields[item.value]))
-                    }
-                    if (item.type === 'image' || item.type === 'base-image') {
-                        promises.push(getLoadedImage(item))
-                    }
-                })
-                return Promise.all(promises)
-            }).then(items => {
-                let stage = new konva.Stage()
-                let layer = new konva.Layer()
-                stage.x(0)
-                stage.y(0)
-                stage.height(template.canvas.items.find(item => item.type === "base-image")['original-height'])
-                stage.width(template.canvas.items.find(item => item.type === "base-image")['original-width'])
-                stage.scaleX(1)
-                stage.scaleY(1)
-                stage.add(layer)
-                items.forEach(item =>
-                    layer.add(item)
-                )
-                let img = stage.toDataURL({ pixelRatio: 3, mimeType: 'image/jpeg' })
-                console.log("Items loaded into Konva layer by toDataURL()")
-                var data = img.replace(/^data:image\/\w+;base64,/, "")
-                var buffer = Buffer.from(data, 'base64')
-                console.log(`pathDir: ${pathDir}`)
-                stage = null
-                resolve(buffer)
-            }).then((res) => {
-                console.log("fonts folder deleted")
-            })
-            .catch(err => {
-                reject(err)
-            })
-    })
+
+export const createTemplate = async (req, res) => {
+    const uid = req.body.uid
+    const name = req.body.name
+    const template = {
+        name,
+        description,
+        uid,
+        createdAt: new Date().getTime(),
+        exportCertificatesAs: "png",
+        canvas: {
+            items: [
+                {
+                    type: 'base-image',
+                    x: 0,
+                    y: 0,
+                    id: makeid(12),
+                    draggable: false,
+                    type: "base-image",
+                    name: "Base template image",
+                    alt: "Example image",
+                    storageRef: "default_template_images/base.jpg",
+                    width: "1920",
+                    height: "1080",
+                    isConstant: true,
+                },
+                {
+                    type: "text",
+                    value: "Example text field",
+                    x: 25,
+                    y: 25,
+                    fill: "#fff",
+                    attr: {
+                        fontSize: 200,
+                        fontFamily: "Roboto",
+                    },
+                    isConstant: true,
+                },
+            ],
+        }
+    }
+    const db = getFirestore()
+    const result = await addDoc(collection(db, 'templates'), template)
+    console.log('Creating a new template for user :', uid, 'with name :', name)
+    res.send("Successfully created Template with name:")
 }
 
-export const createCertificate = (req, res) => {
-    let templateId = req.body.templateId
-    let fields = req.body.fields
-    let certificateName = `${req.body.receiverName}_${makeid(24)}.jpg`
-    let certificateRef = `${req.body.uid}/certificates/${certificateName}`
-    getTemplateImage(templateId, fields)
-        .then(buffer => {
-            console.log("Buffer created")
-            fs.writeFileSync(`./storage/${certificateName}.jpg`, buffer)
-            let file = fs.readFileSync(`./storage/${certificateName}.jpg`)
-            return uploadBytes(ref(getStorage(), certificateRef), file)
-        }).then((res) => {
-            console.log("File uploaded")
-            let db = getFirestore()
-            return addDoc(collection(db, "certificates"), {
-                uid: req.body.uid,
-                name: certificateName,
-                fields,
-                templateId,
-                createdAt: new Date(),
-                receiverEmail: req.body.receiverEmail,
-                receiverName: req.body.receiverName,
-            })
-        }).then(docRef => {
+export const getTemplateById = async (req, res) => {
+    const templateId = req.params.templateId
+    const db = getFirestore()
+    const template = await getDoc(doc(db, 'templates', templateId))
+    console.log("Getting template with id :", templateId)
+    console.log("Data :", template.data)
+    return template.data
+}
 
-            console.log("Document added to firestore")
-            fs.unlinkSync(`./storage/${certificateName}.jpg`)
-            res.send(certificateRef)
-        }).catch(err => {
-            res.send(err)
+export const getTemplatesByUid = (req, res) => {
+    const uid = req.body.uid
+    const db = getFirestore()
+    let result = []
+    const templates = await getDocs(collection(db, 'templates'), where('uid', '==', uid))
+    templates.forEach(res => {
+        result.push({ id: res.id, data: res.data })
+    })
+    console.log("Getting templates of user with uid :", uid)
+    console.log("Result :", result)
+    res.send(result)
+}
 
-        })
+export const saveTemplate = async (req, res) => {
+    const templateId = req.body.templateId
+    let templateItems = req.body.templateItems
+    const docRef = doc(db, "templates", templateId)
+    const docSnap = await getDoc(docRef)
+    const template = {
+        ...docSnap.data(),
+        canvas: {
+            ...docSnap.data().canvas,
+            items: templateItems,
+        }
+    }
+    const result = await setDoc(doc(db, 'templates', templateId), template)
+    res.send(result)
+}
+
+export const deleteTemplate = (req, res) => {
+    const templateId = req.body.templateId
+    await deleteDoc(doc(db, 'templates', templateId))
+    res.send("Template deleted successfully")
 }
 
 export const getFields = (req, res) => {
@@ -109,33 +100,4 @@ export const getFields = (req, res) => {
     })
 }
 
-export const getTemplateFields = (templateId) => {
-    return new Promise((resolve, reject) => {
-        getTemplate(templateId)
-            .then(template => {
-                let data = template.data()
-                console.log("Data:", Object.keys(data))
-                let fields = []
-                data.canvas.items.forEach(item => {
-                    if (!item.isConstant && item.type === 'text')
-                        fields.push(item.value)
-                })
-                console.log(fields)
-                resolve(fields)
-            }).catch(err => {
-                reject(err)
-            })
-    })
-}
-
-const makeid = (length) => {
-    let result = ''
-    let characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'
-    let charactersLength = characters.length
-    for (let i = 0; i < length; i++) {
-        result += characters.charAt(Math.floor(Math.random() *
-            charactersLength))
-    }
-    return result
-}
 

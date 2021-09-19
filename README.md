@@ -1,22 +1,86 @@
-Create certificate:
-{
-    "user_id":"6ObtYeRHWSOI5VPsV4Glxv3valx1",
-    "form_path":"6ObtYeRHWSOI5VPsV4Glxv3valx1/templates/cert_form.pdf",
-    "file_name":"Amudhan",
-    "certificate_details":{
-    "field_values":{
-        "Name":"Amudhan M",
-        "CourseName":"How to seduce Chicks",
-        "Issue Date":"31st Febraury 2022",
-        "CredentialID":"df5ds4f45"
-    },
-    "given_to":"Amudhan",
-    "template_id":"Qk5sq5Mdl8rDeRudYivc",
-    "given_by":"PornHub Ltd",
-    "valid_till":"91st Febraury 2999",
-    "provider_id":"6ObtYeRHWSOI5VPsV4Glxv3valx1"
-    }
-}
+### TEMAPLATES
 
--------------------------
- 
+#### POST : /template/create
+
+    {
+        name
+        uid(ownerID)
+        canvas:{
+            items:[item1, item2...]
+            baseImageSize:{
+                x
+                y
+            }
+        }
+    }
+
+#### UPDATE : /template/save
+
+    {
+        templateId
+        template:{
+            ...template
+        }
+    }
+
+#### DELETE : /template/delete/:id
+
+#### GET : /template/get/:id
+
+#### GET : /template/get/users/:uid
+
+## Certtificates
+
+#### POST /certificate/create/one
+
+    {
+        templateId
+        ownerId
+        fields:{
+
+        }
+        receiver:{
+            ..receiverData
+        }
+    }
+
+#### POST /certificate/create/bulk
+
+    {
+        templateId
+        ownerId
+        fields:[
+            {receiver1}
+            {receiver2}
+            ...
+            ...
+            ...
+        ]
+        receiver:[ //in same order as fields
+            {receiver1Data}
+            {receiver2Data}
+            ...
+            ...
+            ...
+        ]
+    }
+
+#### GET /certificate/get/one/:id
+
+#### GET /certificate/get/all/:uid
+
+#### GET /certificate/get/template/:templateid
+
+#### GET /certificate/get/one/name/:name
+
+#### GET /certificate/get/one/email/:email
+
+#### UPDATE /certificate/update/one/:id
+
+#### UPDATE /certificate/update/bulk
+
+#### DELETE /certificate/delete/one/:id
+
+#### DELETE /certificate/delete/bulk
+
+#### DELETE /certificate/delete/all
