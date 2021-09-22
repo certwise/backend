@@ -5,12 +5,12 @@ const router = express.Router()
 
 router.post('/one', controller.createTemplate)
 
-router.get('/fields/:id', controller.getFields)
-router.get('one/:id', controller.getTemplateById)
+router.get('/fields/:templateId', controller.getFields)
+router.get('/one/:templateId', controller.getTemplateById)
 router.get('/owner/:uid', controller.getTemplatesByUid)
+router.get('/numberOfCertificates/:templateId', controller.getNumberOfCertificates)
+router.put('/:templateId', controller.saveTemplate)
 
-router.put('/:id', controller.saveTemplate)
-
-router.delete('/:id', controller.deleteTemplate)
+router.delete('/:templateId', controller.deleteTemplate)
 
 export default router

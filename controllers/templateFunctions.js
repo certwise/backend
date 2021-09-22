@@ -3,6 +3,7 @@ import { getStorage, getDownloadURL, ref } from "firebase/storage";
 import fs from 'fs'
 import env from '../config.js'
 import konva from 'konva'
+import canvas from 'canvas'
 import axios from 'axios'
 
 /***
@@ -36,7 +37,6 @@ export const getLoadedImage = (item) => {
                             image.width(item.width)
                             image.height(item.height)
                         }
-                        console.log(image)
                         resolve(image)
                         return image
                     })
@@ -56,32 +56,20 @@ export const getLoadedImage = (item) => {
 export const getLoadedText = (item, textValue) => {
     return new Promise((resolve, reject) => {
         console.log(`getLoadedText()`)
-        if (item.attr.itemLink) {
-            let text = new konva.Text({
-                x: item.x,
-                y: item.y,
-                text: textValue,
-                fontSize: item.attr.fontSize,
-                fontFamily: item.attr.fontFamily,
-                fill: item.fill || item.color,
-                id: item.id,
-                align: 'center',
-
-            })
-            console.log("Text from getLoadedText():", text.y)
-            resolve(text)
-        }
-        else {
-            resolve(new konva.Text({
-                x: item.x,
-                y: item.y,
-                text: textValue,
-                fontSize: item.attr.fontSize,
-                fontFamily: item.attr.fontFamily,
-                fill: item.fill || item.color,
-                id: item.id
-            }))
-        }
+        const text = new konva.Text({
+            x: item.x,
+            y: item.y,
+            height: item.height,
+            width: item.width,
+            text: textValue,
+            fontSize: item.attr.fontSize,
+            fontFamily: item.attr.fontFamily,
+            align: item.attr.align || 'center',
+            fill: item.fill || item.color,
+            id: item.id,
+        })
+        console.log(text)
+        resolve(text)
     })
 
 }
@@ -164,7 +152,6 @@ export const getTemplateImage = (templateId, fields) => {
                 return getAllFontsFromTemplate(template, pathDir)
             })
             .then(fontsObj => {
-                console.log(fontsObj)
                 console.log("fonts loaded to storage")
                 fontsObj.forEach(obj => {
                     fontDir = obj.folder
@@ -177,7 +164,7 @@ export const getTemplateImage = (templateId, fields) => {
                         if (item.isConstant)
                             promises.push(getLoadedText(item, item.value))
                         else
-                            promises.push(getLoadedText(item, fields[item.value]))
+                            promises.push(getLoadedText(item, fields[item.name]))
                     }
                     if (item.type === 'image' || item.type === 'base-image') {
                         promises.push(getLoadedImage(item))
@@ -189,8 +176,8 @@ export const getTemplateImage = (templateId, fields) => {
                 let layer = new konva.Layer()
                 stage.x(0)
                 stage.y(0)
-                stage.height(template.canvas.items.find(item => item.type === "base-image")['original-height'])
-                stage.width(template.canvas.items.find(item => item.type === "base-image")['original-width'])
+                stage.height(template.canvas.items.find(item => item.type === "base-image")['height'])
+                stage.width(template.canvas.items.find(item => item.type === "base-image")['width'])
                 stage.scaleX(1)
                 stage.scaleY(1)
                 stage.add(layer)
@@ -208,26 +195,30 @@ export const getTemplateImage = (templateId, fields) => {
                 console.log("fonts folder deleted")
             })
             .catch(err => {
+                console.log(err)
                 reject(err)
             })
     })
 }
 
 export const getTemplateFields = (templateId) => {
+    console.log("getTemplateFields()")
     return new Promise((resolve, reject) => {
         getTemplate(templateId)
             .then(template => {
+                console.log(template.data())
                 let data = template.data()
                 console.log("Data:", Object.keys(data))
                 let fields = []
                 data.canvas.items.forEach(item => {
                     if (!item.isConstant && item.type === 'text')
-                        fields.push(item.value)
+                        fields.push(item.name)
                 })
                 console.log(fields)
                 resolve(fields)
             }).catch(err => {
                 reject(err)
+                console.log(err)
             })
     })
 }
