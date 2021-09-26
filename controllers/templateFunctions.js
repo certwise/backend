@@ -68,6 +68,12 @@ export const getLoadedText = (item, textValue) => {
             fill: item.fill || item.color,
             id: item.id,
         })
+        if (text.attrs.text !== text.textArr[0].text) {
+            while (text.attrs.text !== text.textArr[0].text) {
+                text.setAttr('fontSize', text.attrs.fontSize - 1)
+                console.log("Reducing fontSize to:", text.attrs.fontSize)
+            }
+        }
         console.log(text)
         resolve(text)
     })

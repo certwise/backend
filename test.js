@@ -1,18 +1,32 @@
-// import { getTemplate } from './controllers/functions/getTemplates.js'
+import Konva from "konva"
+import fs from "fs"
+let stage = new Konva.Stage({
+    width: 500,
+    height: 500,
+})
+let layer = new Konva.Layer()
 
-// getTemplate('wPUxzOtcnuNTSGdHgTf6')
-//     .then(template => {
-//         console.log(template.data())
-//     }).catch(err => {
-//         console.log(err)
-//     })
-
-// import { getTemplateImage } from "./controllers/template.js"
-// getTemplateImage('XD6CUjjHTaOGfECaE7uY', { "Name of receiver": "Name", "date of issue": "today" }).then(template => {
-//     console.log(template)
-// })
-
-import fs from 'fs'
-import del from 'del'
-//4EbMaLbqNvpmZES48xl5
-del.sync(['./storage/fonts/**'], ['!./storage/fonts/4EbMaLbqNvpmZES48xl5'])
+let text = new Konva.Text({
+    x: 10,
+    y: 10,
+    height: 100,
+    width: 400,
+    text: 'Hello World',
+    fontSize: 60,
+    fontFamily: 'Calibri',
+    fill: 'green',
+    draggable: true,
+})
+console.log(text.attrs.text, text.textArr[0].text)
+if (text.attrs.text !== text.textArr[0].text) {
+    while (text.attrs.text !== text.textArr[0].text) {
+        text.setAttr('fontSize', text.attrs.fontSize - 1)
+        console.log(text.attrs.fontSize)
+    }
+}
+stage.add(layer)
+layer.add(text)
+let img = stage.toDataURL({ pixelRatio: 3, mimeType: 'image/jpeg' })
+let data = img.replace(/^data:image\/\w+;base64,/, "")
+let buffer = Buffer.from(data, 'base64')
+fs.writeFileSync('test.jpg', buffer)

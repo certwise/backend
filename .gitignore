@@ -1,1 +1,4 @@
 node_modules
+storage/fonts/*.*
+test.js
+*.jpg
