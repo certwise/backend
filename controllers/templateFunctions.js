@@ -29,14 +29,16 @@ export const getLoadedImage = (item) => {
                         if (item.type === 'base-image') {
                             image.x(0)
                             image.y(0)
-                            image.width(item['original-width'])
-                            image.height(item['original-height'])
+                            image.width(item['width'])
+                            image.height(item['height'])
                         } else {
                             image.x(item.x)
                             image.y(item.y)
                             image.width(item.width)
                             image.height(item.height)
                         }
+                        image.opacity(item.opacity || 1)
+                        image.rotation(item.rotation || 0)
                         resolve(image)
                         return image
                     })
@@ -67,6 +69,8 @@ export const getLoadedText = (item, textValue) => {
             align: item.attr.align || 'center',
             fill: item.fill || item.color,
             id: item.id,
+            rotation: item.rotation || 0,
+            opacity: item.opacity || 1,
         })
         if (text.attrs.text !== text.textArr[0].text) {
             while (text.attrs.text !== text.textArr[0].text) {
