@@ -1,6 +1,5 @@
 // Move all this to .env
 import { initializeApp } from "firebase/app";
-
 const firebaseConfig = {
     apiKey: "AIzaSyBaX8tNR8l6g596VD30jXrb8sqcIay1OQg",
     authDomain: "certify-4bf9a.firebaseapp.com",
@@ -11,9 +10,11 @@ const firebaseConfig = {
 };
 
 // Gets port from Heroku
+// eslint-disable-next-line no-undef
 const PORT = process.env.PORT;
 
 const firebaseApp = initializeApp(firebaseConfig);
 
 const env = { firebaseConfig, PORT, firebaseApp }
 export default env
+
