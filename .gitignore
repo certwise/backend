@@ -1,4 +1,10 @@
 node_modules
-storage/fonts/*.*
-test.js
-*.jpg
+src/storage/fonts/*.*
+src/test.js
+src/*.jpg
+src/storage/*.jpg
+
+build/storage/fonts/*.*
+build/test.js
+build/*.jpg
+build/storage/*.jpg
