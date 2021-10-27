@@ -65,7 +65,7 @@ export const createSingleCertificate_ = (
 			})
 			.then(() => {
 				console.log("Document added to firestore");
-				//fs.unlinkSync(`./storage/${certificateName}.jpg`);
+				fs.unlinkSync(`./storage/${certificateName}.jpg`);
 				const db = getFirestore();
 				return getDoc(doc(db, "templates", templateId));
 			})

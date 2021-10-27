@@ -3,7 +3,7 @@ import { writeFileSync } from "fs";
 const stage = new Konva.Stage({
 	width: 500,
 	height: 500,
-	container: undefined,
+	container: undefined as unknown as string,
 });
 const layer = new Konva.Layer();
 

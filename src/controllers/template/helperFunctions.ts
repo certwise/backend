@@ -189,12 +189,12 @@ export const getTemplateImage = (templateId: string, fields: field[]) => {
 				template.canvas.items.map((item) => {
 					console.log(item.type);
 					if (item.type === "text") {
-						if (item.isConstant) promises.push(getLoadedText(item, item.name));
+						if (item.isConstant) promises.push(getLoadedText(item, item.text));
 						else
 							promises.push(
 								getLoadedText(
 									item,
-									fields.find((i) => i.name === item.name)?.value
+									fields.find((i) => i.name === item.name)?.value as string
 								)
 							);
 					}
@@ -205,20 +205,14 @@ export const getTemplateImage = (templateId: string, fields: field[]) => {
 				return Promise.all(promises);
 			})
 			.then((items) => {
-				const stage = new konva.Stage({ container: undefined });
+				const stage = new konva.Stage({
+					container: undefined as unknown as string,
+				});
 				const layer = new konva.Layer();
 				stage.x(0);
 				stage.y(0);
-				stage.height(
-					template.canvas.items.find((item) => item.type === "base-image")[
-						"height"
-					]
-				);
-				stage.width(
-					template.canvas.items.find((item) => item.type === "base-image")[
-						"width"
-					]
-				);
+				stage.height(template.canvas.height);
+				stage.width(template.canvas.width);
 				stage.scaleX(1);
 				stage.scaleY(1);
 				stage.add(layer);
@@ -251,7 +245,7 @@ export const getTemplateFields = (templateId: string): Promise<string[]> => {
 				console.log("Data:", Object.keys(data));
 				const fields: string[] = [];
 				data.canvas.items.forEach((item) => {
-					if (item.type === "text" || item.type === "image") {
+					if (item.type === "text") {
 						if (!item.isConstant) fields.push(item.name);
 					}
 				});

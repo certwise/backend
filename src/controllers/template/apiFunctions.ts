@@ -89,7 +89,7 @@ export const deleteTemplate_ = async (id: string): Promise<boolean> => {
 export const updateTemplate_ = async (template: template): Promise<boolean> => {
 	const db = getFirestore();
 	console.log("Updating");
-	if (isTemplate(template)) {
+	if (isTemplate(template) && template.id !== undefined) {
 		try {
 			console.log("Updating template with id: ", template.id);
 			const docRef = doc(db, "templates", template.id.trim());
