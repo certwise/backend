@@ -8,3 +8,7 @@ build/storage/fonts/*.*
 build/test.js
 build/*.jpg
 build/storage/*.jpg
+build/controllers
+build/models
+build/routes
+build/*.js
