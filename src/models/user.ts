@@ -1,19 +1,25 @@
-import { Timestamp } from "@firebase/firestore";
+import { User } from "@firebase/auth";
 
-export type user = {
-	id: string;
+export declare interface user extends User {
 	name: string;
-	email: string;
+	avatar?: string;
+	certificates?: string[];
 	isVerified: boolean;
 	isAdmin: boolean;
-	photoURL?: string;
-	createdAt: Timestamp;
-	updatedAt: Timestamp;
-	canvas: canvas;
-};
+	createdAt: Date;
+	updatedAt?: Date;
+	subscription?: subscription;
+	isSignedIn?: boolean;
+}
 
-type canvas = {
-	exportCanvasAs: "jpg" | "png";
-	//
-	//
+export type subscription = {
+	numberOfCerificatesRemaining: number;
+	numberOfCerificatesCreated: number;
+	numberOfTemplateRemaining: number;
+	numberOfTemplateCreated: number;
+	createdTemplates: string[];
+	createdCertificates: string[];
+	currentPlan: string;
+	previousSubscriptions: string[];
+	topUps: string[];
 };
