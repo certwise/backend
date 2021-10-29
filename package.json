@@ -4,10 +4,8 @@
 	"description": "",
 	"main": "index.js",
 	"scripts": {
-		"start": "tsc && cd build && node index.js",
-		"tsc": "tsc",
-		"lint": "eslint",
-		"postinstall": "npm run tsc"
+		"start": "cd build && node index.js",
+		"lint": "eslint"
 	},
 	"author": "",
 	"license": "ISC",
