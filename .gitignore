@@ -1,6 +1,6 @@
 node_modules
 src/storage/fonts/*.*
-src/test.js
+src/test.ts
 src/*.jpg
 src/storage/*.jpg
 
@@ -12,3 +12,5 @@ build/controllers
 build/models
 build/routes
 build/*.js
+
+test.*

@@ -1,5 +1,5 @@
 {
-	"name": "pdf",
+	"name": "certwise-api",
 	"version": "1.0.0",
 	"description": "",
 	"main": "index.js",
@@ -22,7 +22,8 @@
 		"get-google-fonts": "^1.2.2",
 		"konva": "^8.2.2",
 		"nodemon": "^2.0.12",
-		"pdf-form-utils": "^1.0.4"
+		"pdf-form-utils": "^1.0.4",
+		"tsc": "^2.0.3"
 	},
 	"devDependencies": {
 		"@types/axios": "^0.14.0",

@@ -8,8 +8,9 @@ const app = express();
 
 app.use(cors());
 
-app.use(express.urlencoded({ extended: false }));
+app.use(express.urlencoded({ extended: true }));
 app.use(function (req, res, next) {
+	console.log(req.method, req.url);
 	res.header("Access-Control-Allow-Origin", "*");
 	res.header("Access-Control-Allow-Credentials", "true");
 	res.header("Access-Control-Allow-Methods", "GET,PUT,POST,DELETE,OPTIONS");
@@ -21,13 +22,13 @@ app.use(function (req, res, next) {
 });
 // parse application/json
 app.use(express.json());
-
-app.get("/", (req, res) => {
-	res.send("CertWise Api");
-});
-
 app.use("/template", templateRoute);
 app.use("/certificate", certificateRoute);
 app.use("/payments", paymentRoutes);
+
+app.get("/", (req, res) => {
+	console.log("hello", req.hostname);
+	res.send("CertWise Api");
+});
 
 app.listen(env.PORT, () => console.log(`Server started at port ${env.PORT}`));

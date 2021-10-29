@@ -45,8 +45,13 @@ export const getTemplateById_ = async (
 	try {
 		const template = await getDoc(doc(db, "templates", id));
 		console.log("Getting template with id: ", id);
-		console.log("Template data: ", template.data() as template);
-		return { ...(template.data() as template), id: template.id };
+		if (template.data()) {
+			console.log("Template data: ", template.data() as template);
+			return { ...(template.data() as template), id: template.id };
+		} else {
+			console.error("Template does not exist");
+			return false;
+		}
 	} catch (error) {
 		console.log("Error getting template by id - ", error);
 		return false;
