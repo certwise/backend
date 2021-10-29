@@ -65,31 +65,13 @@ export type text = {
 	draggable?: boolean;
 };
 
-export type baseImage = {
-	name: string;
-	id: string;
-	type: "base-image";
-	imageStorageRef: string;
-	height: number;
-	width: number;
-	x: number;
-	y: number;
-	opacity: number;
-	rotation: number;
-	alt?: string;
-	scaleX?: number;
-	scaleY?: number;
-	src: null;
-	isConstant: true;
-};
-
 export type field = {
 	name: string;
 	value: string;
 };
 
-export type items = Array<image | text | baseImage>;
-export type item = image | text | baseImage;
+export type items = Array<image | text>;
+export type item = image | text;
 
 export function isTemplate(template: template): template is template {
 	const bool =

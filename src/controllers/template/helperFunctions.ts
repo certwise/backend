@@ -5,7 +5,7 @@ import env from "../../config";
 import konva from "konva/cmj";
 import canvas from "canvas";
 import axios from "axios";
-import { baseImage, field, template, text } from "../../models/template";
+import { field, template, text } from "../../models/template";
 import { image } from "../../models/template";
 import { Image } from "konva/cmj/shapes/Image";
 import { Text } from "konva/cmj/shapes/Text";
@@ -23,24 +23,17 @@ const getTemplate = async (templateId: string) => {
 /***
  * pass in imageItem and get the konva Image object that can be added to a layer
  */
-export const getLoadedImage = (item: image | baseImage): Promise<Image> => {
+export const getLoadedImage = (item: image): Promise<Image> => {
 	return new Promise((resolve, reject) => {
 		if (item.imageStorageRef) {
 			console.log(item.imageStorageRef);
 			getDownloadURL(ref(getStorage(), item.imageStorageRef))
 				.then((url) => {
 					konva.Image.fromURL(url, (image: Image) => {
-						if (item.type === "base-image") {
-							image.x(0);
-							image.y(0);
-							image.width(item["width"]);
-							image.height(item["height"]);
-						} else {
-							image.x(item.x);
-							image.y(item.y);
-							image.width(item.width);
-							image.height(item.height);
-						}
+						image.x(item.x);
+						image.y(item.y);
+						image.width(item.width);
+						image.height(item.height);
 						image.opacity(item.opacity || 1);
 						image.rotation(item.rotation || 0);
 						resolve(image);
@@ -198,7 +191,7 @@ export const getTemplateImage = (templateId: string, fields: field[]) => {
 								)
 							);
 					}
-					if (item.type === "image" || item.type === "base-image") {
+					if (item.type === "image") {
 						promises.push(getLoadedImage(item));
 					}
 				});
