@@ -5,12 +5,12 @@ src/*.jpg
 src/storage/*.jpg
 
 
-build/test.js
-build/*.jpg
-build/storage/*.jpg
-build/controllers
-build/models
-build/routes
-build/*.js
+# build/test.js
+# build/*.jpg
+# build/storage/*.jpg
+# build/controllers
+# build/models
+# build/routes
+# build/*.js
 
 test.*
