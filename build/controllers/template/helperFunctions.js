@@ -69,18 +69,10 @@ var getLoadedImage = function (item) {
             (0, storage_1.getDownloadURL)((0, storage_1.ref)((0, storage_1.getStorage)(), item.imageStorageRef))
                 .then(function (url) {
                 cmj_1.default.Image.fromURL(url, function (image) {
-                    if (item.type === "base-image") {
-                        image.x(0);
-                        image.y(0);
-                        image.width(item["width"]);
-                        image.height(item["height"]);
-                    }
-                    else {
-                        image.x(item.x);
-                        image.y(item.y);
-                        image.width(item.width);
-                        image.height(item.height);
-                    }
+                    image.x(item.x);
+                    image.y(item.y);
+                    image.width(item.width);
+                    image.height(item.height);
                     image.opacity(item.opacity || 1);
                     image.rotation(item.rotation || 0);
                     resolve(image);
@@ -217,7 +209,7 @@ var getTemplateImage = function (templateId, fields) {
                     else
                         promises.push((0, exports.getLoadedText)(item, (_a = fields.find(function (i) { return i.name === item.name; })) === null || _a === void 0 ? void 0 : _a.value));
                 }
-                if (item.type === "image" || item.type === "base-image") {
+                if (item.type === "image") {
                     promises.push((0, exports.getLoadedImage)(item));
                 }
             });
