@@ -4,6 +4,8 @@ import env from "./config";
 import templateRoute from "./routes/template";
 import certificateRoute from "./routes/certificate";
 import paymentRoutes from "./routes/payments";
+import userRoutes from "./routes/user";
+
 const app = express();
 
 app.use(cors());
@@ -25,7 +27,7 @@ app.use(express.json());
 app.use("/template", templateRoute);
 app.use("/certificate", certificateRoute);
 app.use("/payments", paymentRoutes);
-
+app.use("/user", userRoutes);
 app.get("/", (req, res) => {
 	console.log("hello", req.hostname);
 	res.send("CertWise Api");

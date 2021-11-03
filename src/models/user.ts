@@ -1,25 +1,24 @@
-import { User } from "@firebase/auth";
-
-export declare interface user extends User {
+export type user = {
+	uid: string;
 	name: string;
-	avatar?: string;
-	certificates?: string[];
+	email: string;
+	institution: string;
 	isVerified: boolean;
-	isAdmin: boolean;
 	createdAt: Date;
+	photoURL?: string;
 	updatedAt?: Date;
-	subscription?: subscription;
-	isSignedIn?: boolean;
-}
 
-export type subscription = {
 	numberOfCerificatesRemaining: number;
 	numberOfCerificatesCreated: number;
-	numberOfTemplateRemaining: number;
-	numberOfTemplateCreated: number;
-	createdTemplates: string[];
-	createdCertificates: string[];
+	certificates?: string[];
+
+	numberOfTemplatesRemaining: number;
+	numberOfTemplatesCreated: number;
+	templates: string[];
+
 	currentPlan: string;
 	previousSubscriptions: string[];
 	topUps: string[];
+
+	stripeCustomerId: string;
 };

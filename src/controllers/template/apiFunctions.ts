@@ -12,6 +12,7 @@ import {
 	deleteDoc,
 	query,
 } from "firebase/firestore";
+import { user } from "../../models/user";
 
 export const createTemplate_ = async (
 	template: template
@@ -27,6 +28,12 @@ export const createTemplate_ = async (
 				template.name
 			);
 			console.log("Template:", template);
+			const userRef = doc(collection(db, "users"), template.uid);
+			const user = await getDoc(userRef);
+			const x: user = user.data() as user;
+			x.numberOfTemplatesCreated++;
+			x.templates.push(docRef.id);
+			await setDoc(userRef, x);
 			return "Template created successfully with id: " + docRef.id;
 		} catch (err) {
 			console.log("Error creating template - ", err);
@@ -82,6 +89,14 @@ export const getTemplatesByUid_ = async (
 export const deleteTemplate_ = async (id: string): Promise<boolean> => {
 	const db = getFirestore();
 	try {
+		const templateRef = doc(collection(db, "templates"), id);
+		const template = await getDoc(templateRef);
+		const uid = template.data()?.uid;
+		const userRef = doc(collection(db, "users"), uid);
+		const user = await getDoc(userRef);
+		const x: user = user.data() as user;
+		x.numberOfTemplatesCreated--;
+		await setDoc(userRef, x);
 		console.log("Deleting template with id: ", id);
 		await deleteDoc(doc(db, "templates", id));
 		return true;

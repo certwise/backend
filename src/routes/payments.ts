@@ -1,9 +1,9 @@
 import express from "express";
 const router = express.Router();
 import * as controller from "../controllers/payments";
-router.post("/create-payment-intent", controller.createPaymentIntent);
-router.post("/create-customer", controller.createCustomer);
-router.post("/create-subscription", controller.createSubscription);
+import { webhook } from "../controllers/payments/webhook";
+
 router.post("/create-checkout-session", controller.createCheckoutSession);
 
+router.post("/webhook", webhook);
 export default router;

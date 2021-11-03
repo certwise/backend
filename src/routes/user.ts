@@ -1,9 +1,13 @@
-import express from 'express'
-const router = express.Router()
+import express from "express";
+import * as controllers from "../controllers/user";
+const router = express.Router();
+router.get("/:uid", controllers.getUser);
 
-// router.get('/user/all', getAllUsers)
-// router.get('/user/:id', getUser)
-// router.post('/user', createUser)
-// router.delete('/user/:id', deleteUser)
+router.post("/", controllers.createUser);
+router.post("/stripeCustomer", controllers.createStripeCustomer);
 
-export default router
+router.put("/", controllers.updateUser);
+
+// router.delete('/:id', deleteUser)
+
+export default router;

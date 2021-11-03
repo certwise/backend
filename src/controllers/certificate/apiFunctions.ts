@@ -12,6 +12,8 @@ import {
 import { getStorage, uploadBytes, ref } from "firebase/storage";
 import fs from "fs";
 import { certificate } from "../../models/certificate";
+import { template } from "../../models/template";
+import { user } from "../../models/user";
 import { getTemplateImage, makeid } from "../template/helperFunctions";
 
 export const getCertificate_ = () => {
@@ -46,6 +48,8 @@ export const createSingleCertificate_ = (
 	const fields = cert.fields;
 	const certificateName = `${cert.recipient.name}_${makeid(12)}.jpg`;
 	const certificateRef = `${cert.issuerId}/certificates/${certificateName}`;
+	const db = getFirestore();
+	let certificateId = "";
 	return new Promise((resolve) => {
 		getTemplateImage(templateId, fields)
 			.then((buffer: any) => {
@@ -56,26 +60,38 @@ export const createSingleCertificate_ = (
 			})
 			.then(() => {
 				console.log("File uploaded");
-				const db = getFirestore();
 				const certificate: certificate = {
 					...cert,
 					storageRef: certificateRef,
 				};
 				return addDoc(collection(db, "certificates"), certificate);
 			})
-			.then(() => {
+			.then((docRef) => {
+				certificateId = docRef.id;
 				console.log("Document added to firestore");
 				fs.unlinkSync(`./storage/${certificateName}.jpg`);
-				const db = getFirestore();
 				return getDoc(doc(db, "templates", templateId));
 			})
 			.then((t) => {
-				const template = { ...t.data() };
-				if (template["numberOfCertificates"] > 0)
-					template["numberOfCertificates"]++;
-				else template["numberOfCertificates"] = 1;
+				const template: template = { ...(t.data() as template) };
+				template.numberOfCertificates++;
 				const db = getFirestore();
 				return setDoc(doc(db, "templates", templateId), template);
+			})
+			.then(() => {
+				const userRef = doc(collection(db, "users"), cert.issuerId);
+				return getDoc(userRef);
+			})
+			.then((user) => {
+				let x: user = user.data() as user;
+				const userRef = doc(collection(db, "users"), cert.issuerId);
+				x.numberOfCerificatesCreated++;
+				const array = x.certificates || [];
+				x = {
+					...x,
+					certificates: [...array, certificateId],
+				};
+				return setDoc(userRef, x);
 			})
 			.then(() => resolve(true))
 			.catch(() => {
