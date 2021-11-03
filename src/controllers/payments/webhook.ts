@@ -5,8 +5,27 @@ const stripe = new Stripe("sk_test_3f9jVdJkeCc6nc4NTEgey2Mo", {
 	apiVersion: "2020-08-27",
 });
 
+const endpointSecret = "whsec_JeBCHOhrCG0PU62Nhr3AZGpguQe2eGlb";
+
 export const webhook = (request: Request, response: Response) => {
-	const event = request.body;
+	let event = request.body;
+	const sig = request.headers["stripe-signature"];
+	try {
+		event = stripe.webhooks.constructEvent(
+			request.body,
+			sig as any,
+			endpointSecret
+		);
+	} catch (err: any) {
+		response.status(400).send(`Webhook Error: ${err.message}`);
+		return;
+	}
+	// Handle the event
+	console.log(`Unhandled event type ${event.type}`);
+
+	// Return a 200 response to acknowledge receipt of the event
+	response.send();
+
 	console.log("Webhook request body :", event);
 	// Handle the event
 	switch (event.type) {
