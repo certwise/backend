@@ -9,6 +9,7 @@ const endpointSecret = "whsec_JeBCHOhrCG0PU62Nhr3AZGpguQe2eGlb";
 
 export const webhook = (request: Request, response: Response) => {
 	let event = request.body;
+	console.log("Request body:", event);
 	const sig = request.headers["stripe-signature"];
 	try {
 		event = stripe.webhooks.constructEvent(
@@ -17,15 +18,9 @@ export const webhook = (request: Request, response: Response) => {
 			endpointSecret
 		);
 	} catch (err: any) {
-		response.status(400).send(`Webhook Error: ${err.message}`);
+		response.status(404).send(`Webhook Error: ${err.message}`);
 		return;
 	}
-	// Handle the event
-	console.log(`Unhandled event type ${event.type}`);
-
-	// Return a 200 response to acknowledge receipt of the event
-	response.send();
-
 	console.log("Webhook request body :", event);
 	// Handle the event
 	switch (event.type) {
@@ -54,5 +49,5 @@ export const webhook = (request: Request, response: Response) => {
 			console.log(`Unhandled event type ${event.type}.`);
 	}
 	// Return a 200 response to acknowledge receipt of the event
-	response.send();
+	response.status(200).send();
 };
