@@ -46,6 +46,15 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
         if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
     }
 };
+var __spreadArray = (this && this.__spreadArray) || function (to, from, pack) {
+    if (pack || arguments.length === 2) for (var i = 0, l = from.length, ar; i < l; i++) {
+        if (ar || !(i in from)) {
+            if (!ar) ar = Array.prototype.slice.call(from, 0, i);
+            ar[i] = from[i];
+        }
+    }
+    return to.concat(ar || Array.prototype.slice.call(from));
+};
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
@@ -91,6 +100,8 @@ var createSingleCertificate_ = function (cert) {
     var fields = cert.fields;
     var certificateName = cert.recipient.name + "_" + (0, helperFunctions_1.makeid)(12) + ".jpg";
     var certificateRef = cert.issuerId + "/certificates/" + certificateName;
+    var db = (0, firestore_1.getFirestore)();
+    var certificateId = "";
     return new Promise(function (resolve) {
         (0, helperFunctions_1.getTemplateImage)(templateId, fields)
             .then(function (buffer) {
@@ -101,24 +112,32 @@ var createSingleCertificate_ = function (cert) {
         })
             .then(function () {
             console.log("File uploaded");
-            var db = (0, firestore_1.getFirestore)();
             var certificate = __assign(__assign({}, cert), { storageRef: certificateRef });
             return (0, firestore_1.addDoc)((0, firestore_1.collection)(db, "certificates"), certificate);
         })
-            .then(function () {
+            .then(function (docRef) {
+            certificateId = docRef.id;
             console.log("Document added to firestore");
             fs_1.default.unlinkSync("./storage/" + certificateName + ".jpg");
-            var db = (0, firestore_1.getFirestore)();
             return (0, firestore_1.getDoc)((0, firestore_1.doc)(db, "templates", templateId));
         })
             .then(function (t) {
             var template = __assign({}, t.data());
-            if (template["numberOfCertificates"] > 0)
-                template["numberOfCertificates"]++;
-            else
-                template["numberOfCertificates"] = 1;
+            template.numberOfCertificates++;
             var db = (0, firestore_1.getFirestore)();
             return (0, firestore_1.setDoc)((0, firestore_1.doc)(db, "templates", templateId), template);
+        })
+            .then(function () {
+            var userRef = (0, firestore_1.doc)((0, firestore_1.collection)(db, "users"), cert.issuerId);
+            return (0, firestore_1.getDoc)(userRef);
+        })
+            .then(function (user) {
+            var x = user.data();
+            var userRef = (0, firestore_1.doc)((0, firestore_1.collection)(db, "users"), cert.issuerId);
+            x.numberOfCerificatesCreated++;
+            var array = x.certificates || [];
+            x = __assign(__assign({}, x), { certificates: __spreadArray(__spreadArray([], array, true), [certificateId], false) });
+            return (0, firestore_1.setDoc)(userRef, x);
         })
             .then(function () { return resolve(true); })
             .catch(function () {

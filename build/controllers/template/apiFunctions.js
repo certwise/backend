@@ -52,30 +52,40 @@ var template_1 = require("../../models/template");
 var helperFunctions_1 = require("./helperFunctions");
 var firestore_1 = require("firebase/firestore");
 var createTemplate_ = function (template) { return __awaiter(void 0, void 0, void 0, function () {
-    var db, docRef, err_1;
+    var db, docRef, userRef, user, x, err_1;
     return __generator(this, function (_a) {
         switch (_a.label) {
             case 0:
                 db = (0, firestore_1.getFirestore)();
-                if (!(0, template_1.isTemplate)(template)) return [3 /*break*/, 5];
+                if (!(0, template_1.isTemplate)(template)) return [3 /*break*/, 7];
                 _a.label = 1;
             case 1:
-                _a.trys.push([1, 3, , 4]);
+                _a.trys.push([1, 5, , 6]);
                 return [4 /*yield*/, (0, firestore_1.addDoc)((0, firestore_1.collection)(db, "templates"), template)];
             case 2:
                 docRef = _a.sent();
                 console.log("Creating a new template for user: ", template.uid, "with name: ", template.name);
                 console.log("Template:", template);
-                return [2 /*return*/, "Template created successfully with id: " + docRef.id];
+                userRef = (0, firestore_1.doc)((0, firestore_1.collection)(db, "users"), template.uid);
+                return [4 /*yield*/, (0, firestore_1.getDoc)(userRef)];
             case 3:
+                user = _a.sent();
+                x = user.data();
+                x.numberOfTemplatesCreated++;
+                x.templates.push(docRef.id);
+                return [4 /*yield*/, (0, firestore_1.setDoc)(userRef, x)];
+            case 4:
+                _a.sent();
+                return [2 /*return*/, "Template created successfully with id: " + docRef.id];
+            case 5:
                 err_1 = _a.sent();
                 console.log("Error creating template - ", err_1);
                 return [2 /*return*/, false];
-            case 4: return [3 /*break*/, 6];
-            case 5:
+            case 6: return [3 /*break*/, 8];
+            case 7:
                 console.log("Template is not valid (in createTemplate_)");
                 return [2 /*return*/, false];
-            case 6: return [2 /*return*/];
+            case 8: return [2 /*return*/];
         }
     });
 }); };
@@ -140,24 +150,39 @@ var getTemplatesByUid_ = function (uid) { return __awaiter(void 0, void 0, void 
 }); };
 exports.getTemplatesByUid_ = getTemplatesByUid_;
 var deleteTemplate_ = function (id) { return __awaiter(void 0, void 0, void 0, function () {
-    var db, e_1;
-    return __generator(this, function (_a) {
-        switch (_a.label) {
+    var db, templateRef, template, uid, userRef, user, x, e_1;
+    var _a;
+    return __generator(this, function (_b) {
+        switch (_b.label) {
             case 0:
                 db = (0, firestore_1.getFirestore)();
-                _a.label = 1;
+                _b.label = 1;
             case 1:
-                _a.trys.push([1, 3, , 4]);
+                _b.trys.push([1, 6, , 7]);
+                templateRef = (0, firestore_1.doc)((0, firestore_1.collection)(db, "templates"), id);
+                return [4 /*yield*/, (0, firestore_1.getDoc)(templateRef)];
+            case 2:
+                template = _b.sent();
+                uid = (_a = template.data()) === null || _a === void 0 ? void 0 : _a.uid;
+                userRef = (0, firestore_1.doc)((0, firestore_1.collection)(db, "users"), uid);
+                return [4 /*yield*/, (0, firestore_1.getDoc)(userRef)];
+            case 3:
+                user = _b.sent();
+                x = user.data();
+                x.numberOfTemplatesCreated--;
+                return [4 /*yield*/, (0, firestore_1.setDoc)(userRef, x)];
+            case 4:
+                _b.sent();
                 console.log("Deleting template with id: ", id);
                 return [4 /*yield*/, (0, firestore_1.deleteDoc)((0, firestore_1.doc)(db, "templates", id))];
-            case 2:
-                _a.sent();
+            case 5:
+                _b.sent();
                 return [2 /*return*/, true];
-            case 3:
-                e_1 = _a.sent();
+            case 6:
+                e_1 = _b.sent();
                 console.log("Error deleting templates - ", e_1);
                 return [2 /*return*/, false];
-            case 4: return [2 /*return*/];
+            case 7: return [2 /*return*/];
         }
     });
 }); };

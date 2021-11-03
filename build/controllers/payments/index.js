@@ -39,94 +39,42 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.createCheckoutSession = exports.createSubscription = exports.createCustomer = exports.createPaymentIntent = void 0;
+exports.createCheckoutSession = exports.createStripeCustomer = void 0;
 var stripe_1 = __importDefault(require("stripe"));
 var stripe = new stripe_1.default("sk_test_3f9jVdJkeCc6nc4NTEgey2Mo", {
     apiVersion: "2020-08-27",
 });
-var createPaymentIntent = function (req, res) { return __awaiter(void 0, void 0, void 0, function () {
-    var paymentIntent;
+var priceIdCertWiseStandardINR = "price_1JpUa2LZFyxWm1345u9Uniph";
+var createStripeCustomer = function (name, email) { return __awaiter(void 0, void 0, void 0, function () {
+    var customer, e_1;
     return __generator(this, function (_a) {
         switch (_a.label) {
             case 0:
-                console.log("createPaymentIntent");
-                return [4 /*yield*/, stripe.paymentIntents.create({
-                        amount: 2500,
-                        currency: "inr",
-                        payment_method_types: ["card"],
+                _a.trys.push([0, 2, , 3]);
+                return [4 /*yield*/, stripe.customers.create({
+                        name: name,
+                        email: email,
                     })];
-            case 1:
-                paymentIntent = _a.sent();
-                res.send({
-                    clientSecret: paymentIntent.client_secret,
-                });
-                return [2 /*return*/];
-        }
-    });
-}); };
-exports.createPaymentIntent = createPaymentIntent;
-var createCustomer = function (req, res) { return __awaiter(void 0, void 0, void 0, function () {
-    var customer;
-    return __generator(this, function (_a) {
-        switch (_a.label) {
-            case 0: return [4 /*yield*/, stripe.customers.create({
-                    email: req.body.email,
-                })];
             case 1:
                 customer = _a.sent();
-                // save the customer.id as stripeCustomerId
-                // in your database.
-                res.send({ customer: customer });
-                return [2 /*return*/];
-        }
-    });
-}); };
-exports.createCustomer = createCustomer;
-var createSubscription = function (req, res) { return __awaiter(void 0, void 0, void 0, function () {
-    var customerId, priceId, subscription, error_1;
-    return __generator(this, function (_a) {
-        switch (_a.label) {
-            case 0:
-                customerId = req.cookies["customer"];
-                priceId = req.body.priceId;
-                _a.label = 1;
-            case 1:
-                _a.trys.push([1, 3, , 4]);
-                return [4 /*yield*/, stripe.subscriptions.create({
-                        customer: customerId,
-                        items: [
-                            {
-                                price: priceId,
-                            },
-                        ],
-                        payment_behavior: "default_incomplete",
-                        expand: ["latest_invoice.payment_intent"],
-                    })];
+                console.log("Creating Stripe Customer:", customer, name, email);
+                return [2 /*return*/, customer.id];
             case 2:
-                subscription = _a.sent();
-                res.send({
-                    subscriptionId: subscription.id,
-                    clientSecret: subscription.latest_invoice
-                        .payment_intent.client_secret,
-                });
-                return [3 /*break*/, 4];
-            case 3:
-                error_1 = _a.sent();
-                return [2 /*return*/, res.status(400).send({ error: { message: error_1.message } })];
-            case 4: return [2 /*return*/];
+                e_1 = _a.sent();
+                console.log(e_1);
+                return [2 /*return*/, false];
+            case 3: return [2 /*return*/];
         }
     });
 }); };
-exports.createSubscription = createSubscription;
+exports.createStripeCustomer = createStripeCustomer;
 var createCheckoutSession = function (req, res) { return __awaiter(void 0, void 0, void 0, function () {
-    var priceIdStdINR, priceIdStdUSD, price, trial, session;
+    var price, trial, session;
     return __generator(this, function (_a) {
         switch (_a.label) {
             case 0:
-                priceIdStdINR = "price_1JpUa2LZFyxWm1345u9Uniph";
-                priceIdStdUSD = "price_1JpUUALZFyxWm1348aw2a707";
                 console.log("createCheckoutSession", req.body);
-                price = priceIdStdINR;
+                price = priceIdCertWiseStandardINR;
                 trial = undefined;
                 if (req.body.plan === "trial")
                     trial = 7;
@@ -137,9 +85,10 @@ var createCheckoutSession = function (req, res) { return __awaiter(void 0, void 
                                 price: price,
                             },
                         ],
+                        customer_email: req.body.email,
                         mode: "subscription",
-                        success_url: "https://certwise.app/payments/success?session_id={CHECKOUT_SESSION_ID}",
-                        cancel_url: "https://certwise.app/payments/fail",
+                        success_url: "http://localhost:3000/payments/success?session_id={CHECKOUT_SESSION_ID}",
+                        cancel_url: "http://localhost:3000/payments/fail",
                         subscription_data: {
                             trial_period_days: trial,
                         },

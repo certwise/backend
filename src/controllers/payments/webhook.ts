@@ -11,6 +11,7 @@ export const webhook = (request: Request, response: Response) => {
 	let event = request.body;
 	console.log("Request body:", event);
 	const sig = request.headers["stripe-signature"];
+	console.log("Signature:", sig, endpointSecret);
 	try {
 		event = stripe.webhooks.constructEvent(
 			request.body,
