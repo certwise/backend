@@ -5,7 +5,7 @@ const stripe = new Stripe("sk_test_3f9jVdJkeCc6nc4NTEgey2Mo", {
 	apiVersion: "2020-08-27",
 });
 
-const priceIdCertWiseStandardINR = "price_1JpUa2LZFyxWm1345u9Uniph";
+const priceIdCertWiseStandardINR = "price_1JrnC5LZFyxWm134FdDciOcE";
 
 export const createStripeCustomer = async (
 	name: string,
@@ -33,10 +33,11 @@ export const createCheckoutSession = async (req: Request, res: Response) => {
 		payment_method_types: ["card"],
 		line_items: [
 			{
+				quantity: 1,
 				price,
 			},
 		],
-		customer_email: req.body.email,
+		customer: req.body.customerId,
 		mode: "subscription",
 		success_url:
 			"http://localhost:3000/payments/success?session_id={CHECKOUT_SESSION_ID}",

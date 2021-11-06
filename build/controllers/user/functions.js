@@ -38,7 +38,7 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.createStripeCustomer_ = exports.updateUser_ = exports.createUser_ = exports.getUser_ = void 0;
 var firestore_1 = require("firebase/firestore");
-var payments_1 = require("../payments");
+var payment_1 = require("../payment");
 var db = (0, firestore_1.getFirestore)();
 var getUser_ = function (uid) { return __awaiter(void 0, void 0, void 0, function () {
     var user, e_1;
@@ -106,7 +106,7 @@ var createStripeCustomer_ = function (uid, name, email) { return __awaiter(void 
             case 0:
                 _a.trys.push([0, 5, , 6]);
                 uDoc = (0, firestore_1.doc)((0, firestore_1.collection)(db, "users"), uid);
-                return [4 /*yield*/, (0, payments_1.createStripeCustomer)(name, email)];
+                return [4 /*yield*/, (0, payment_1.createStripeCustomer)(name, email)];
             case 1:
                 customer = _a.sent();
                 console.log("Customer created:", customer);

@@ -17,7 +17,7 @@ router.get("/name-uid", controller.getTemplateByNameAndUid);
 
 router.get("/names/:uid", controller.getTemplateNamesByUid);
 
-router.put("/update/:templateId", controller.updateTemplate);
+router.put("/update", controller.updateTemplate);
 router.put("/rename", controller.renameTemplate);
 
 router.delete("/:templateId", controller.deleteTemplate);

@@ -13,14 +13,14 @@ export const getAllCertificatesByUID = (req: Request, res: Response) => {
 	const uid = req.params.uid;
 	getAllCertificatesByUID_(uid).then((certificates) => {
 		if (certificates !== false) res.status(200).send(certificates);
-		else res.status(500).send("No certificates found");
+		else res.status(400).send("No certificates found");
 	});
 };
 
 export const createSingleCertificate = (req: Request, res: Response) => {
 	createSingleCertificate_(req.body).then((result) => {
 		if (result) res.status(200).send(result);
-		else res.status(500).send(result);
+		else res.status(400).send(result);
 	});
 };
 
@@ -28,7 +28,7 @@ export const getCertificatesByTemplate = (req: Request, res: Response) => {
 	const templateId = req.params.templateId;
 	getCertificatesByTemplate_(templateId).then((result) => {
 		if (result !== false) res.status(200).send(result);
-		else res.status(500).send(result);
+		else res.status(400).send(result);
 	});
 };
 

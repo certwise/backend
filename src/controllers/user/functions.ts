@@ -9,9 +9,8 @@ import {
 	query,
 	where,
 } from "firebase/firestore";
-import { StringMappingType } from "typescript";
 import { user } from "../../models/user";
-import { createStripeCustomer } from "../payments";
+import { createStripeCustomer } from "../payment";
 
 const db = getFirestore();
 export const getUser_ = async (uid: string): Promise<user | false> => {

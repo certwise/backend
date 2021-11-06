@@ -12,7 +12,7 @@ var getAllCertificatesByUID = function (req, res) {
         if (certificates !== false)
             res.status(200).send(certificates);
         else
-            res.status(500).send("No certificates found");
+            res.status(400).send("No certificates found");
     });
 };
 exports.getAllCertificatesByUID = getAllCertificatesByUID;
@@ -21,7 +21,7 @@ var createSingleCertificate = function (req, res) {
         if (result)
             res.status(200).send(result);
         else
-            res.status(500).send(result);
+            res.status(400).send(result);
     });
 };
 exports.createSingleCertificate = createSingleCertificate;
@@ -31,7 +31,7 @@ var getCertificatesByTemplate = function (req, res) {
         if (result !== false)
             res.status(200).send(result);
         else
-            res.status(500).send(result);
+            res.status(400).send(result);
     });
 };
 exports.getCertificatesByTemplate = getCertificatesByTemplate;

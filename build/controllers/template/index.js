@@ -54,7 +54,7 @@ var getTemplateById = function (req, res) {
         if (result !== false)
             res.status(200).send(result);
         else
-            res.status(500).send(result);
+            res.status(400).send(result);
     });
 };
 exports.getTemplateById = getTemplateById;
@@ -66,7 +66,7 @@ var getTemplatesByUid = function (req, res) { return __awaiter(void 0, void 0, v
             if (result !== false)
                 res.status(200).send(result);
             else
-                res.status(500).send(false);
+                res.status(400).send(false);
         });
         return [2 /*return*/];
     });
@@ -78,7 +78,7 @@ var updateTemplate = function (req, res) { return __awaiter(void 0, void 0, void
             if (result)
                 res.status(200).send(result);
             else
-                res.status(500).send(result);
+                res.status(400).send(result);
         });
         return [2 /*return*/];
     });
@@ -90,7 +90,7 @@ var deleteTemplate = function (req, res) { return __awaiter(void 0, void 0, void
             if (result)
                 res.status(200).send(result);
             else
-                res.status(500).send(result);
+                res.status(400).send(result);
         });
         return [2 /*return*/];
     });
@@ -101,7 +101,7 @@ var getFields = function (req, res) {
         if (result !== false)
             res.status(200).send(result);
         else
-            res.status(500).send(result);
+            res.status(400).send(result);
     });
 };
 exports.getFields = getFields;
@@ -111,7 +111,7 @@ var getNumberOfCertificates = function (req, res) { return __awaiter(void 0, voi
             if (result !== false)
                 res.status(200).send(result);
             else
-                res.status(500).send(result);
+                res.status(400).send(result);
         });
         return [2 /*return*/];
     });
@@ -123,7 +123,7 @@ var getTemplateNamesByUid = function (req, res) { return __awaiter(void 0, void 
             if (result !== false)
                 res.status(200).send(result);
             else
-                res.status(500).send(result);
+                res.status(400).send(result);
         });
         return [2 /*return*/];
     });
@@ -135,7 +135,7 @@ var getTemplateByNameAndUid = function (req, res) { return __awaiter(void 0, voi
             if (result !== false)
                 res.status(200).send(result);
             else
-                res.status(500).send(result);
+                res.status(400).send(result);
         });
         return [2 /*return*/];
     });
@@ -148,7 +148,7 @@ var renameTemplate = function (req, res) { return __awaiter(void 0, void 0, void
             if (result !== false)
                 res.status(200).send(result);
             else
-                res.status(500).send(result);
+                res.status(400).send(result);
         });
         return [2 /*return*/];
     });

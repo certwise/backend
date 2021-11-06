@@ -8,7 +8,7 @@ var cors_1 = __importDefault(require("cors"));
 var config_1 = __importDefault(require("./config"));
 var template_1 = __importDefault(require("./routes/template"));
 var certificate_1 = __importDefault(require("./routes/certificate"));
-var payments_1 = __importDefault(require("./routes/payments"));
+var payment_1 = __importDefault(require("./routes/payment"));
 var user_1 = __importDefault(require("./routes/user"));
 var app = (0, express_1.default)();
 app.use((0, cors_1.default)());
@@ -25,7 +25,7 @@ app.use(function (req, res, next) {
 app.use(express_1.default.json());
 app.use("/template", template_1.default);
 app.use("/certificate", certificate_1.default);
-app.use("/payments", payments_1.default);
+app.use("/payments", payment_1.default);
 app.use("/user", user_1.default);
 app.get("/", function (req, res) {
     console.log("hello", req.hostname);

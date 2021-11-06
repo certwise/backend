@@ -3,7 +3,7 @@ import cors from "cors";
 import env from "./config";
 import templateRoute from "./routes/template";
 import certificateRoute from "./routes/certificate";
-import paymentRoutes from "./routes/payments";
+import paymentRoutes from "./routes/payment";
 import userRoutes from "./routes/user";
 
 const app = express();
