@@ -16,7 +16,9 @@ const db = getFirestore();
 export const getUser_ = async (uid: string): Promise<user | false> => {
 	try {
 		const user = await getDoc(doc(collection(db, "users"), uid));
-		return user.data() as user;
+		console.log("ID:", user.id);
+		if (!user.data()) return false;
+		else return user.data() as user;
 	} catch (e) {
 		console.log(e);
 		return false;

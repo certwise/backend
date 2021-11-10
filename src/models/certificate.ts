@@ -1,3 +1,5 @@
+import { recipient } from "./recipient";
+
 export type certificate = {
 	id?: string;
 	issuerId: string;
@@ -14,12 +16,4 @@ export type certificate = {
 export type Field = {
 	name: string;
 	value: string;
-};
-
-export type recipient = {
-	id: string;
-	name: string;
-	email: string;
-	phone?: string;
-	certificates?: Array<string>;
 };

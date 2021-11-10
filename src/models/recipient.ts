@@ -4,7 +4,5 @@ export type recipient = {
 	name: string;
 	phone?: string;
 	address?: string;
-	institution: Array<string>;
 	createdAt: string;
-	instituitionId: Array<string>;
 };

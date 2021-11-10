@@ -1,86 +1,157 @@
-### TEMAPLATES
+template:{
+id
+name
+description
+created at
+updated at
+owner id
+user ids (users with access)
+number of certificates created
+canvas:{
+height
+width
+export as
+items:[
+item1 :{x, y, height, width, color, ... ...}
+item2
+]
+}
+image storage reference
+}
 
-#### POST : /template/create
+certificate:{
+id
+recipient
+instituition
+isValid (is date before validity and after issuance)
+created by (uid)
+issued by (uid)
+created at
+issued at
+updated at
+valid till
+template id
+fields :[
+{
+name: ...
+value: ...
+}
+...
+...
+...
+]
+revoked at
+}
 
-    {
-        name
-        uid(ownerID)
-        canvas:{
-            items:[item1, item2...]
-            baseImageSize:{
-                x
-                y
-            }
-        }
-    }
+user {
+id
+name
+instituition
+email
+phone?
+issued certificates
+created certificates
+created templates
+is email cerified
+created at
+updated at
+photo storage reference
 
-#### UPDATE : /template/save
+}
 
-    {
-        templateId
-        template:{
-            ...template
-        }
-    }
+recipient{
+id
+name
+email
+roll id
+phone
+custom fields{
+...
+...
+...
+}
+}
 
-#### DELETE : /template/delete/:id
+recipient group{
+id
+name
+recipients[]
+created by
+created at
+institution
+templates []
+}
 
-#### GET : /template/get/:id
+institution{
+id
+name
+created by
+admins []
+issuers []
+moderators []
+viewers []
+subsription id
+}
 
-#### GET : /template/get/users/:uid
+subscription{
+id
+plan id
+institution
+number of certificates remaining
+number of certificates issued in current subscription
+isDue
+due date
+created at
+validity
+topups[]
+isActive
+}
 
-## Certtificates
+///////// separate
+end user{
+id
+name
+recipient ids - [] (can verify using emails)
+certificates - []
+created at
+updated at
+}
 
-#### POST /certificate/create/one
+user signs up -> user + institution info
 
-    {
-        templateId
-        ownerId
-        fields:{
+create template
+adds admins/editors
+chooses from existing templates
 
-        }
-        receiver:{
-            ..receiverData
-        }
-    }
+adds recipients
+enters fields for each recipient (like roll number, department, dob etc)
+import from csv
+manual
 
-#### POST /certificate/create/bulk
+extract csv template for a template for users to create bulk certificates
+extract
+upload filled certificate
+review
+create
 
-    {
-        templateId
-        ownerId
-        fields:[
-            {receiver1}
-            {receiver2}
-            ...
-            ...
-            ...
-        ]
-        receiver:[ //in same order as fields
-            {receiver1Data}
-            {receiver2Data}
-            ...
-            ...
-            ...
-        ]
-    }
+create groups
+choose recipients manually
+choose recipients by filter
+choose recipients by csv
+add group based fields (like cgpa or DOB or rank etc)
+create
+edit
+review
 
-#### GET /certificate/get/one/:id
+pays for subscription -> gets access to create certs
 
-#### GET /certificate/get/all/:uid
+create certificates for groups
+choose template
+choose group
+get csv-template or enter details manually
+(map fields in template to fields in recipients)
 
-#### GET /certificate/get/template/:templateid
-
-#### GET /certificate/get/one/name/:name
-
-#### GET /certificate/get/one/email/:email
-
-#### UPDATE /certificate/update/one/:id
-
-#### UPDATE /certificate/update/bulk
-
-#### DELETE /certificate/delete/one/:id
-
-#### DELETE /certificate/delete/bulk
-
-#### DELETE /certificate/delete/all
+issue certs
+review created certs
+issue at a scheduled time
+notify recipients by mail

@@ -36,25 +36,19 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
     }
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.createStripeCustomer_ = exports.updateUser_ = exports.createUser_ = exports.getUser_ = void 0;
+exports.updateRecipient_ = exports.createRecipient_ = exports.getRecipient_ = void 0;
 var firestore_1 = require("firebase/firestore");
-var payment_1 = require("../payment");
 var db = (0, firestore_1.getFirestore)();
-var getUser_ = function (uid) { return __awaiter(void 0, void 0, void 0, function () {
-    var user, e_1;
+var getRecipient_ = function (uid) { return __awaiter(void 0, void 0, void 0, function () {
+    var recipient, e_1;
     return __generator(this, function (_a) {
         switch (_a.label) {
             case 0:
                 _a.trys.push([0, 2, , 3]);
-                return [4 /*yield*/, (0, firestore_1.getDoc)((0, firestore_1.doc)((0, firestore_1.collection)(db, "users"), uid))];
+                return [4 /*yield*/, (0, firestore_1.getDoc)((0, firestore_1.doc)((0, firestore_1.collection)(db, "recipients"), uid))];
             case 1:
-                user = _a.sent();
-                console.log("ID:", user.id);
-                if (!user.data())
-                    return [2 /*return*/, false];
-                else
-                    return [2 /*return*/, user.data()];
-                return [3 /*break*/, 3];
+                recipient = _a.sent();
+                return [2 /*return*/, recipient.data()];
             case 2:
                 e_1 = _a.sent();
                 console.log(e_1);
@@ -63,35 +57,47 @@ var getUser_ = function (uid) { return __awaiter(void 0, void 0, void 0, functio
         }
     });
 }); };
-exports.getUser_ = getUser_;
-var createUser_ = function (user) { return __awaiter(void 0, void 0, void 0, function () {
-    var uDoc, e_2;
+exports.getRecipient_ = getRecipient_;
+var createRecipient_ = function (recipient) { return __awaiter(void 0, void 0, void 0, function () {
+    var uDoc, all, bool_1, e_2;
     return __generator(this, function (_a) {
         switch (_a.label) {
             case 0:
-                _a.trys.push([0, 2, , 3]);
-                uDoc = (0, firestore_1.doc)((0, firestore_1.collection)(db, "users"), user.uid);
-                return [4 /*yield*/, (0, firestore_1.setDoc)(uDoc, user)];
+                _a.trys.push([0, 5, , 6]);
+                uDoc = (0, firestore_1.collection)(db, "recipients");
+                return [4 /*yield*/, (0, firestore_1.getDocs)(uDoc)];
             case 1:
+                all = _a.sent();
+                bool_1 = true;
+                all.forEach(function (doc) {
+                    if (doc.data().email === recipient.email) {
+                        bool_1 = false;
+                    }
+                });
+                if (!bool_1) return [3 /*break*/, 3];
+                return [4 /*yield*/, (0, firestore_1.addDoc)(uDoc, recipient)];
+            case 2:
                 _a.sent();
                 return [2 /*return*/, true];
-            case 2:
+            case 3: return [2 /*return*/, false];
+            case 4: return [3 /*break*/, 6];
+            case 5:
                 e_2 = _a.sent();
                 console.log(e_2);
                 return [2 /*return*/, false];
-            case 3: return [2 /*return*/];
+            case 6: return [2 /*return*/];
         }
     });
 }); };
-exports.createUser_ = createUser_;
-var updateUser_ = function (user) { return __awaiter(void 0, void 0, void 0, function () {
+exports.createRecipient_ = createRecipient_;
+var updateRecipient_ = function (recipient) { return __awaiter(void 0, void 0, void 0, function () {
     var uDoc, e_3;
     return __generator(this, function (_a) {
         switch (_a.label) {
             case 0:
                 _a.trys.push([0, 2, , 3]);
-                uDoc = (0, firestore_1.doc)((0, firestore_1.collection)(db, "users"), user.uid);
-                return [4 /*yield*/, (0, firestore_1.setDoc)(uDoc, user, { merge: true })];
+                uDoc = (0, firestore_1.doc)((0, firestore_1.collection)(db, "recipients"), recipient.id);
+                return [4 /*yield*/, (0, firestore_1.setDoc)(uDoc, recipient, { merge: true })];
             case 1:
                 _a.sent();
                 return [2 /*return*/, true];
@@ -103,31 +109,4 @@ var updateUser_ = function (user) { return __awaiter(void 0, void 0, void 0, fun
         }
     });
 }); };
-exports.updateUser_ = updateUser_;
-var createStripeCustomer_ = function (uid, name, email) { return __awaiter(void 0, void 0, void 0, function () {
-    var uDoc, customer, e_4;
-    return __generator(this, function (_a) {
-        switch (_a.label) {
-            case 0:
-                _a.trys.push([0, 5, , 6]);
-                uDoc = (0, firestore_1.doc)((0, firestore_1.collection)(db, "users"), uid);
-                return [4 /*yield*/, (0, payment_1.createStripeCustomer)(name, email)];
-            case 1:
-                customer = _a.sent();
-                console.log("Customer created:", customer);
-                if (!customer) return [3 /*break*/, 3];
-                return [4 /*yield*/, (0, firestore_1.setDoc)(uDoc, { stripeCustomerId: customer }, { merge: true })];
-            case 2:
-                _a.sent();
-                return [2 /*return*/, customer];
-            case 3: return [2 /*return*/, false];
-            case 4: return [3 /*break*/, 6];
-            case 5:
-                e_4 = _a.sent();
-                console.log(e_4);
-                return [2 /*return*/, false];
-            case 6: return [2 /*return*/];
-        }
-    });
-}); };
-exports.createStripeCustomer_ = createStripeCustomer_;
+exports.updateRecipient_ = updateRecipient_;

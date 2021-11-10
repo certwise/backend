@@ -3,8 +3,7 @@ src/storage/fonts/*.*
 src/test.ts
 src/*.jpg
 src/storage/*.jpg
-
-
+README.md
 # build/test.js
 # build/*.jpg
 # build/storage/*.jpg

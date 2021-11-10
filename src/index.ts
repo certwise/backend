@@ -5,7 +5,7 @@ import templateRoute from "./routes/template";
 import certificateRoute from "./routes/certificate";
 import paymentRoutes from "./routes/payment";
 import userRoutes from "./routes/user";
-
+import recipientRoutes from "./routes/recipient";
 const app = express();
 
 app.use(cors());
@@ -26,7 +26,8 @@ app.use(function (req, res, next) {
 app.use(express.json());
 app.use("/template", templateRoute);
 app.use("/certificate", certificateRoute);
-app.use("/payments", paymentRoutes);
+app.use("/payment", paymentRoutes);
+app.use("/recipient", recipientRoutes);
 app.use("/user", userRoutes);
 app.get("/", (req, res) => {
 	console.log("hello", req.hostname);

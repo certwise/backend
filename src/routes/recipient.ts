@@ -2,14 +2,11 @@ import express from "express";
 import * as controllers from "../controllers/recipient";
 const router = express.Router();
 
-router.get("/:id");
-router.get("/group/:groupid");
-router.get("/uid/:uid");
+router.get("/:id", controllers.getRecipient);
 
-router.post("/one");
-router.post("/many");
+router.post("/", controllers.createRecipient);
 
-router.put("/");
+router.put("/", controllers.updateRecipient);
 
 router.delete("/:id");
 
