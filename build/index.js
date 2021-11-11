@@ -11,6 +11,8 @@ var certificate_1 = __importDefault(require("./routes/certificate"));
 var payment_1 = __importDefault(require("./routes/payment"));
 var user_1 = __importDefault(require("./routes/user"));
 var recipient_1 = __importDefault(require("./routes/recipient"));
+var institution_1 = __importDefault(require("./routes/institution"));
+var group_1 = __importDefault(require("./routes/group"));
 var app = (0, express_1.default)();
 app.use((0, cors_1.default)());
 app.use(express_1.default.urlencoded({ extended: true }));
@@ -29,6 +31,8 @@ app.use("/certificate", certificate_1.default);
 app.use("/payment", payment_1.default);
 app.use("/recipient", recipient_1.default);
 app.use("/user", user_1.default);
+app.use("/institution", institution_1.default);
+app.use("/group", group_1.default);
 app.get("/", function (req, res) {
     console.log("hello", req.hostname);
     res.send("CertWise Api");

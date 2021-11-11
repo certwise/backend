@@ -72,9 +72,10 @@ var createTemplate_ = function (template) { return __awaiter(void 0, void 0, voi
                 user = _a.sent();
                 x = user.data();
                 x.numberOfTemplatesCreated++;
-                x.templates.push(docRef.id);
+                //x.templates.push(docRef.id);
                 return [4 /*yield*/, (0, firestore_1.setDoc)(userRef, x)];
             case 4:
+                //x.templates.push(docRef.id);
                 _a.sent();
                 return [2 /*return*/, "Template created successfully with id: " + docRef.id];
             case 5:

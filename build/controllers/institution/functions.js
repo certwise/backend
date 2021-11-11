@@ -1,15 +1,4 @@
 "use strict";
-var __assign = (this && this.__assign) || function () {
-    __assign = Object.assign || function(t) {
-        for (var s, i = 1, n = arguments.length; i < n; i++) {
-            s = arguments[i];
-            for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p))
-                t[p] = s[p];
-        }
-        return t;
-    };
-    return __assign.apply(this, arguments);
-};
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
@@ -47,19 +36,19 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
     }
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.updateRecipient_ = exports.createRecipient_ = exports.getRecipient_ = void 0;
+exports.updateInstitution_ = exports.createInstitution_ = exports.getInstitution_ = void 0;
 var firestore_1 = require("firebase/firestore");
 var db = (0, firestore_1.getFirestore)();
-var getRecipient_ = function (uid) { return __awaiter(void 0, void 0, void 0, function () {
-    var recipient, e_1;
+var getInstitution_ = function (uid) { return __awaiter(void 0, void 0, void 0, function () {
+    var institution, e_1;
     return __generator(this, function (_a) {
         switch (_a.label) {
             case 0:
                 _a.trys.push([0, 2, , 3]);
-                return [4 /*yield*/, (0, firestore_1.getDoc)((0, firestore_1.doc)((0, firestore_1.collection)(db, "recipients"), uid))];
+                return [4 /*yield*/, (0, firestore_1.getDoc)((0, firestore_1.doc)((0, firestore_1.collection)(db, "institutions"), uid))];
             case 1:
-                recipient = _a.sent();
-                return [2 /*return*/, __assign(__assign({}, recipient.data()), { id: recipient.id })];
+                institution = _a.sent();
+                return [2 /*return*/, institution.data()];
             case 2:
                 e_1 = _a.sent();
                 console.log(e_1);
@@ -68,58 +57,35 @@ var getRecipient_ = function (uid) { return __awaiter(void 0, void 0, void 0, fu
         }
     });
 }); };
-exports.getRecipient_ = getRecipient_;
-var createRecipient_ = function (recipient, institutionId) { return __awaiter(void 0, void 0, void 0, function () {
-    var uDoc, all, bool_1, iDoc, institution, iData, res, e_2;
+exports.getInstitution_ = getInstitution_;
+var createInstitution_ = function (institution) { return __awaiter(void 0, void 0, void 0, function () {
+    var uDoc, doc_1, e_2;
     return __generator(this, function (_a) {
         switch (_a.label) {
             case 0:
-                _a.trys.push([0, 7, , 8]);
-                uDoc = (0, firestore_1.collection)(db, "recipients");
-                return [4 /*yield*/, (0, firestore_1.getDocs)(uDoc)];
+                _a.trys.push([0, 2, , 3]);
+                uDoc = (0, firestore_1.collection)(db, "institutions");
+                return [4 /*yield*/, (0, firestore_1.addDoc)(uDoc, institution)];
             case 1:
-                all = _a.sent();
-                bool_1 = true;
-                all.forEach(function (doc) {
-                    if (doc.data().email === recipient.email) {
-                        bool_1 = false;
-                    }
-                });
-                if (!bool_1) return [3 /*break*/, 5];
-                iDoc = (0, firestore_1.doc)((0, firestore_1.collection)(db, "institutions"), institutionId);
-                return [4 /*yield*/, (0, firestore_1.getDoc)(iDoc)];
+                doc_1 = _a.sent();
+                return [2 /*return*/, doc_1.id];
             case 2:
-                institution = _a.sent();
-                iData = __assign({}, institution.data());
-                console.log("Inst id", institutionId);
-                console.log("idata :", iData);
-                return [4 /*yield*/, (0, firestore_1.addDoc)(uDoc, recipient)];
-            case 3:
-                res = _a.sent();
-                iData.recipients.push(res.id);
-                return [4 /*yield*/, (0, firestore_1.setDoc)((0, firestore_1.doc)((0, firestore_1.collection)(db, "institutions"), institutionId), iData)];
-            case 4:
-                _a.sent();
-                return [2 /*return*/, true];
-            case 5: return [2 /*return*/, false];
-            case 6: return [3 /*break*/, 8];
-            case 7:
                 e_2 = _a.sent();
                 console.log(e_2);
                 return [2 /*return*/, false];
-            case 8: return [2 /*return*/];
+            case 3: return [2 /*return*/];
         }
     });
 }); };
-exports.createRecipient_ = createRecipient_;
-var updateRecipient_ = function (recipient) { return __awaiter(void 0, void 0, void 0, function () {
+exports.createInstitution_ = createInstitution_;
+var updateInstitution_ = function (institution) { return __awaiter(void 0, void 0, void 0, function () {
     var uDoc, e_3;
     return __generator(this, function (_a) {
         switch (_a.label) {
             case 0:
                 _a.trys.push([0, 2, , 3]);
-                uDoc = (0, firestore_1.doc)((0, firestore_1.collection)(db, "recipients"), recipient.id);
-                return [4 /*yield*/, (0, firestore_1.setDoc)(uDoc, recipient, { merge: true })];
+                uDoc = (0, firestore_1.doc)((0, firestore_1.collection)(db, "institutions"), institution.id);
+                return [4 /*yield*/, (0, firestore_1.setDoc)(uDoc, institution, { merge: true })];
             case 1:
                 _a.sent();
                 return [2 /*return*/, true];
@@ -131,4 +97,4 @@ var updateRecipient_ = function (recipient) { return __awaiter(void 0, void 0, v
         }
     });
 }); };
-exports.updateRecipient_ = updateRecipient_;
+exports.updateInstitution_ = updateInstitution_;
