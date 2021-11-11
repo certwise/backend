@@ -32,7 +32,7 @@ export const createTemplate_ = async (
 			const user = await getDoc(userRef);
 			const x: user = user.data() as user;
 			x.numberOfTemplatesCreated++;
-			x.templates.push(docRef.id);
+			//x.templates.push(docRef.id);
 			await setDoc(userRef, x);
 			return "Template created successfully with id: " + docRef.id;
 		} catch (err) {

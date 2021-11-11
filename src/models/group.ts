@@ -5,6 +5,5 @@ export type group = {
 	created_at: string;
 	updated_at: string;
 	recipients: string[];
-	ownerId: string;
-	templates: string[];
+	institution: string;
 };

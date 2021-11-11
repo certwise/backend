@@ -6,6 +6,8 @@ import certificateRoute from "./routes/certificate";
 import paymentRoutes from "./routes/payment";
 import userRoutes from "./routes/user";
 import recipientRoutes from "./routes/recipient";
+import institutionRoutes from "./routes/institution";
+import groupRoutes from "./routes/group";
 const app = express();
 
 app.use(cors());
@@ -24,11 +26,15 @@ app.use(function (req, res, next) {
 });
 // parse application/json
 app.use(express.json());
+
 app.use("/template", templateRoute);
 app.use("/certificate", certificateRoute);
 app.use("/payment", paymentRoutes);
 app.use("/recipient", recipientRoutes);
 app.use("/user", userRoutes);
+app.use("/institution", institutionRoutes);
+app.use("/group", groupRoutes);
+
 app.get("/", (req, res) => {
 	console.log("hello", req.hostname);
 	res.send("CertWise Api");

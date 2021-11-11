@@ -4,5 +4,5 @@ export type recipient = {
 	name: string;
 	phone?: string;
 	address?: string;
-	createdAt: string;
+	createdAt: Date;
 };

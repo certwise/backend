@@ -83,14 +83,10 @@ export const createSingleCertificate_ = (
 				return getDoc(userRef);
 			})
 			.then((user) => {
-				let x: user = user.data() as user;
+				const x: user = user.data() as user;
 				const userRef = doc(collection(db, "users"), cert.issuerId);
 				x.numberOfCerificatesCreated++;
-				const array = x.certificates || [];
-				x = {
-					...x,
-					certificates: [...array, certificateId],
-				};
+
 				return setDoc(userRef, x);
 			})
 			.then(() => resolve(true))

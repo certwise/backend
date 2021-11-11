@@ -9,6 +9,7 @@ import {
 	query,
 	where,
 } from "firebase/firestore";
+import { institution } from "../../models/institution";
 import { recipient } from "../../models/recipient";
 
 const db = getFirestore();
@@ -17,7 +18,7 @@ export const getRecipient_ = async (
 ): Promise<recipient | false> => {
 	try {
 		const recipient = await getDoc(doc(collection(db, "recipients"), uid));
-		return recipient.data() as recipient;
+		return { ...recipient.data(), id: recipient.id } as recipient;
 	} catch (e) {
 		console.log(e);
 		return false;
@@ -25,7 +26,8 @@ export const getRecipient_ = async (
 };
 
 export const createRecipient_ = async (
-	recipient: recipient
+	recipient: recipient,
+	institutionId: string
 ): Promise<boolean> => {
 	try {
 		const uDoc = collection(db, "recipients");
@@ -37,7 +39,14 @@ export const createRecipient_ = async (
 			}
 		});
 		if (bool) {
-			await addDoc(uDoc, recipient);
+			const iDoc = doc(collection(db, "institutions"), institutionId);
+			const institution = await getDoc(iDoc);
+			const iData: institution = { ...(institution.data() as institution) };
+			console.log("Inst id", institutionId);
+			console.log("idata :", iData);
+			const res = await addDoc(uDoc, recipient);
+			iData.recipients.push(res.id);
+			await setDoc(doc(collection(db, "institutions"), institutionId), iData);
 			return true;
 		} else return false;
 	} catch (e) {
