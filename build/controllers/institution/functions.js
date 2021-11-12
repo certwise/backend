@@ -36,7 +36,7 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
     }
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.updateInstitution_ = exports.createInstitution_ = exports.getInstitution_ = void 0;
+exports.setCustomFields_ = exports.updateInstitution_ = exports.createInstitution_ = exports.getInstitution_ = void 0;
 var firestore_1 = require("firebase/firestore");
 var db = (0, firestore_1.getFirestore)();
 var getInstitution_ = function (uid) { return __awaiter(void 0, void 0, void 0, function () {
@@ -98,3 +98,23 @@ var updateInstitution_ = function (institution) { return __awaiter(void 0, void 
     });
 }); };
 exports.updateInstitution_ = updateInstitution_;
+var setCustomFields_ = function (fields, institutionId) { return __awaiter(void 0, void 0, void 0, function () {
+    var uDoc, e_4;
+    return __generator(this, function (_a) {
+        switch (_a.label) {
+            case 0:
+                _a.trys.push([0, 2, , 3]);
+                uDoc = (0, firestore_1.doc)((0, firestore_1.collection)(db, "institutions"), institutionId);
+                return [4 /*yield*/, (0, firestore_1.setDoc)(uDoc, { customFields: fields }, { merge: true })];
+            case 1:
+                _a.sent();
+                return [2 /*return*/, true];
+            case 2:
+                e_4 = _a.sent();
+                console.log(e_4);
+                return [2 /*return*/, false];
+            case 3: return [2 /*return*/];
+        }
+    });
+}); };
+exports.setCustomFields_ = setCustomFields_;

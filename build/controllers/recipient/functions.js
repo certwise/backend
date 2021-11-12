@@ -122,7 +122,7 @@ var updateRecipient_ = function (recipient) { return __awaiter(void 0, void 0, v
                 return [4 /*yield*/, (0, firestore_1.setDoc)(uDoc, recipient, { merge: true })];
             case 1:
                 _a.sent();
-                return [2 /*return*/, true];
+                return [2 /*return*/, recipient.id];
             case 2:
                 e_3 = _a.sent();
                 console.log(e_3);

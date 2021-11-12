@@ -13,12 +13,10 @@ import { institution } from "../../models/institution";
 import { recipient } from "../../models/recipient";
 
 const db = getFirestore();
-export const getRecipient_ = async (
-	uid: string
-): Promise<recipient | false> => {
+export const getRecipient_ = async (uid: string): Promise<any | false> => {
 	try {
 		const recipient = await getDoc(doc(collection(db, "recipients"), uid));
-		return { ...recipient.data(), id: recipient.id } as recipient;
+		return { ...recipient.data(), id: recipient.id } as any;
 	} catch (e) {
 		console.log(e);
 		return false;
@@ -56,12 +54,12 @@ export const createRecipient_ = async (
 };
 
 export const updateRecipient_ = async (
-	recipient: recipient
-): Promise<boolean> => {
+	recipient: any
+): Promise<string | false> => {
 	try {
 		const uDoc = doc(collection(db, "recipients"), recipient.id);
 		await setDoc(uDoc, recipient, { merge: true });
-		return true;
+		return recipient.id;
 	} catch (e) {
 		console.log(e);
 		return false;

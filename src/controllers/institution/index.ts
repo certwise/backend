@@ -2,6 +2,7 @@ import { Request, Response } from "express";
 import {
 	createInstitution_,
 	getInstitution_,
+	setCustomFields_,
 	updateInstitution_,
 } from "./functions";
 
@@ -25,4 +26,12 @@ export const updateInstitution = (req: Request, res: Response) => {
 };
 export const deleteInstitution = (req: Request, res: Response) => {
 	res.send("Institution test");
+};
+
+export const setCustomFields = (req: Request, res: Response) => {
+	console.log(req.body);
+	setCustomFields_(req.body.fields, req.body.institutionId).then((result) => {
+		if (result) res.send(result);
+		else res.status(400).send({ message: "Error setting custom fields" });
+	});
 };

@@ -9,4 +9,5 @@ export type institution = {
 	templates: Array<string>;
 	certificates: Array<string>;
 	admins: Array<string>;
+	customFields: Array<string>;
 };

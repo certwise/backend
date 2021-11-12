@@ -49,3 +49,17 @@ export const updateInstitution_ = async (
 		return false;
 	}
 };
+
+export const setCustomFields_ = async (
+	fields: Array<string>,
+	institutionId: string
+) => {
+	try {
+		const uDoc = doc(collection(db, "institutions"), institutionId);
+		await setDoc(uDoc, { customFields: fields }, { merge: true });
+		return true;
+	} catch (e) {
+		console.log(e);
+		return false;
+	}
+};

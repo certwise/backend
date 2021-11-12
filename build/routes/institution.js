@@ -28,5 +28,6 @@ var router = express_1.default.Router();
 router.get("/:id", controllers.getInstitution);
 router.post("/", controllers.createInstitution);
 router.put("/", controllers.updateInstitution);
+router.put("/customFields", controllers.setCustomFields);
 router.delete("/:id");
 exports.default = router;
