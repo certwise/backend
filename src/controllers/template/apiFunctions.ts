@@ -1,4 +1,4 @@
-import { isTemplate, items, template } from "../../models/template";
+import { isTemplate, items, template } from "../../types/template";
 import { getTemplateFields } from "./helperFunctions";
 import {
 	getFirestore,
@@ -12,7 +12,7 @@ import {
 	deleteDoc,
 	query,
 } from "firebase/firestore";
-import { user } from "../../models/user";
+import { user } from "../../types/user";
 
 export const createTemplate_ = async (
 	template: template

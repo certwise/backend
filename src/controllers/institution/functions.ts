@@ -9,7 +9,7 @@ import {
 	query,
 	where,
 } from "firebase/firestore";
-import { institution } from "../../models/institution";
+import { institution } from "../../types/institution";
 
 const db = getFirestore();
 export const getInstitution_ = async (

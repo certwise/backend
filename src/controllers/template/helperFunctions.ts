@@ -5,8 +5,8 @@ import env from "../../config";
 import konva from "konva/cmj";
 import canvas from "canvas";
 import axios from "axios";
-import { field, template, text } from "../../models/template";
-import { image } from "../../models/template";
+import { field, template, text } from "../../types/template";
+import { image } from "../../types/template";
 import { Image } from "konva/cmj/shapes/Image";
 import { Text } from "konva/cmj/shapes/Text";
 

@@ -1,4 +1,4 @@
-import { template } from "../../models/template";
+import { template } from "../../types/template";
 import { Request, Response } from "express";
 import {
 	createTemplate_,

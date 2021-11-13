@@ -9,13 +9,13 @@ import {
 	query,
 	where,
 } from "firebase/firestore";
-import { group } from "../../models/group";
+import { group } from "../../types/group";
 
 const db = getFirestore();
-export const getGroup_ = async (id: string): Promise<group | false> => {
+export const getGroup_ = async (id: string): Promise<any | false> => {
 	try {
 		const group = await getDoc(doc(collection(db, "groups"), id));
-		return { ...group.data(), id: group.id } as group;
+		return { ...group.data(), id: group.id };
 	} catch (e) {
 		console.log(e);
 		return false;
@@ -23,21 +23,21 @@ export const getGroup_ = async (id: string): Promise<group | false> => {
 };
 export const getGroups_ = async (
 	institutionId: string
-): Promise<group[] | false> => {
+): Promise<any[] | false> => {
 	try {
 		const group = await getDocs(collection(db, "groups"));
-		const groups: group[] = [];
+		const groups: any = [];
 		group.forEach((g) => {
 			if (g.data().institution === institutionId)
-				groups.push({ ...g.data(), id: g.id } as group);
+				groups.push({ ...g.data(), id: g.id });
 		});
-		return groups as group[];
+		return groups;
 	} catch (e) {
 		console.log(e);
 		return false;
 	}
 };
-export const createGroup_ = async (group: group): Promise<string | false> => {
+export const createGroup_ = async (group: any): Promise<string | false> => {
 	try {
 		const uDoc = collection(db, "groups");
 		const doc = await addDoc(uDoc, group);
@@ -48,7 +48,7 @@ export const createGroup_ = async (group: group): Promise<string | false> => {
 	}
 };
 
-export const updateGroup_ = async (group: group): Promise<boolean> => {
+export const updateGroup_ = async (group: any): Promise<boolean> => {
 	try {
 		const uDoc = doc(collection(db, "groups"), group.id);
 		await setDoc(uDoc, group, { merge: true });

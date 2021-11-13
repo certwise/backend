@@ -9,8 +9,8 @@ import {
 	query,
 	where,
 } from "firebase/firestore";
-import { institution } from "../../models/institution";
-import { recipient } from "../../models/recipient";
+import { institution } from "../../types/institution";
+import { recipient } from "../../types/recipient";
 
 const db = getFirestore();
 export const getRecipient_ = async (uid: string): Promise<any | false> => {

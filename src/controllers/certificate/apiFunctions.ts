@@ -11,9 +11,9 @@ import {
 } from "firebase/firestore";
 import { getStorage, uploadBytes, ref } from "firebase/storage";
 import fs from "fs";
-import { certificate } from "../../models/certificate";
-import { template } from "../../models/template";
-import { user } from "../../models/user";
+import { certificate } from "../../types/certificate";
+import { template } from "../../types/template";
+import { user } from "../../types/user";
 import { getTemplateImage, makeid } from "../template/helperFunctions";
 
 export const getCertificate_ = () => {

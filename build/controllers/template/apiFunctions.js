@@ -48,7 +48,7 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.renameTemplate_ = exports.getTemplateByNameAndUid_ = exports.getTemplatesNamesByUid_ = exports.getNumberOfCertificatesInTemplate_ = exports.getFieldsFromTemplate_ = exports.updateItems_ = exports.updateTemplate_ = exports.deleteTemplate_ = exports.getTemplatesByUid_ = exports.getTemplateById_ = exports.createTemplate_ = void 0;
-var template_1 = require("../../models/template");
+var template_1 = require("../../types/template");
 var helperFunctions_1 = require("./helperFunctions");
 var firestore_1 = require("firebase/firestore");
 var createTemplate_ = function (template) { return __awaiter(void 0, void 0, void 0, function () {
