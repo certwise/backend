@@ -24,10 +24,11 @@ export const getRecipient_ = async (uid: string): Promise<any | false> => {
 };
 
 export const createRecipient_ = async (
-	recipient: recipient,
+	recipient: any,
 	institutionId: string
 ): Promise<boolean> => {
 	try {
+		console.log(recipient);
 		const uDoc = collection(db, "recipients");
 		const all = await getDocs(uDoc);
 		let bool = true;
@@ -60,6 +61,27 @@ export const updateRecipient_ = async (
 		const uDoc = doc(collection(db, "recipients"), recipient.id);
 		await setDoc(uDoc, recipient, { merge: true });
 		return recipient.id;
+	} catch (e) {
+		console.log(e);
+		return false;
+	}
+};
+
+export const getAllRecipientsInInstitution_ = async (institutionId: string) => {
+	try {
+		const iDoc = doc(collection(db, "institutions"), institutionId);
+		const institution = await getDoc(iDoc);
+		const iData: any = { ...institution.data() };
+		const recipients = iData.recipients;
+		const uDoc = collection(db, "recipients");
+		const queryObj = query(uDoc, where("id", "in", recipients));
+		const all = await getDocs(queryObj);
+		const res: any = [];
+		all.forEach((doc) => {
+			res.push({ ...doc.data(), id: doc.id });
+			console.log(doc.id);
+		});
+		return res;
 	} catch (e) {
 		console.log(e);
 		return false;

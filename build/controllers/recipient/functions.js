@@ -47,7 +47,7 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
     }
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.updateRecipient_ = exports.createRecipient_ = exports.getRecipient_ = void 0;
+exports.getAllRecipientsInInstitution_ = exports.updateRecipient_ = exports.createRecipient_ = exports.getRecipient_ = void 0;
 var firestore_1 = require("firebase/firestore");
 var db = (0, firestore_1.getFirestore)();
 var getRecipient_ = function (uid) { return __awaiter(void 0, void 0, void 0, function () {
@@ -75,6 +75,7 @@ var createRecipient_ = function (recipient, institutionId) { return __awaiter(vo
         switch (_a.label) {
             case 0:
                 _a.trys.push([0, 7, , 8]);
+                console.log(recipient);
                 uDoc = (0, firestore_1.collection)(db, "recipients");
                 return [4 /*yield*/, (0, firestore_1.getDocs)(uDoc)];
             case 1:
@@ -132,3 +133,35 @@ var updateRecipient_ = function (recipient) { return __awaiter(void 0, void 0, v
     });
 }); };
 exports.updateRecipient_ = updateRecipient_;
+var getAllRecipientsInInstitution_ = function (institutionId) { return __awaiter(void 0, void 0, void 0, function () {
+    var iDoc, institution, iData, recipients, uDoc, queryObj, all, res_1, e_4;
+    return __generator(this, function (_a) {
+        switch (_a.label) {
+            case 0:
+                _a.trys.push([0, 3, , 4]);
+                iDoc = (0, firestore_1.doc)((0, firestore_1.collection)(db, "institutions"), institutionId);
+                return [4 /*yield*/, (0, firestore_1.getDoc)(iDoc)];
+            case 1:
+                institution = _a.sent();
+                iData = __assign({}, institution.data());
+                recipients = iData.recipients;
+                uDoc = (0, firestore_1.collection)(db, "recipients");
+                queryObj = (0, firestore_1.query)(uDoc, (0, firestore_1.where)("id", "in", recipients));
+                return [4 /*yield*/, (0, firestore_1.getDocs)(queryObj)];
+            case 2:
+                all = _a.sent();
+                res_1 = [];
+                all.forEach(function (doc) {
+                    res_1.push(__assign(__assign({}, doc.data()), { id: doc.id }));
+                    console.log(doc.id);
+                });
+                return [2 /*return*/, res_1];
+            case 3:
+                e_4 = _a.sent();
+                console.log(e_4);
+                return [2 /*return*/, false];
+            case 4: return [2 /*return*/];
+        }
+    });
+}); };
+exports.getAllRecipientsInInstitution_ = getAllRecipientsInInstitution_;

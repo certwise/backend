@@ -220,6 +220,14 @@ var getTemplateImage = function (templateId, fields) {
                 container: undefined,
             });
             var layer = new cmj_1.default.Layer();
+            var rect = new cmj_1.default.Rect({
+                x: 0,
+                y: 0,
+                height: template.canvas.height,
+                width: template.canvas.width,
+                fill: "white",
+            });
+            layer.add(rect);
             stage.x(0);
             stage.y(0);
             stage.height(template.canvas.height);
@@ -228,7 +236,10 @@ var getTemplateImage = function (templateId, fields) {
             stage.scaleY(1);
             stage.add(layer);
             items.forEach(function (item) { return layer.add(item); });
-            var img = stage.toDataURL({ pixelRatio: 3, mimeType: "image/jpeg" });
+            var img = stage.toDataURL({
+                pixelRatio: 1.5,
+                mimeType: "image/jpeg",
+            });
             console.log("Items loaded into Konva layer by toDataURL()");
             var data = img.replace(/^data:image\/\w+;base64,/, "");
             // eslint-disable-next-line no-undef

@@ -129,7 +129,8 @@ var createSingleCertificate_ = function (cert) {
             return (0, firestore_1.setDoc)(userRef, x);
         })
             .then(function () { return resolve(true); })
-            .catch(function () {
+            .catch(function (e) {
+            console.log(e);
             resolve(false);
         });
     });

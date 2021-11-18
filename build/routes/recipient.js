@@ -26,6 +26,7 @@ var express_1 = __importDefault(require("express"));
 var controllers = __importStar(require("../controllers/recipient"));
 var router = express_1.default.Router();
 router.get("/:id", controllers.getRecipient);
+router.get("/institution/:institutionId", controllers.getAllRecipientsInInstitution);
 router.post("/", controllers.createRecipient);
 router.put("/", controllers.updateRecipient);
 router.delete("/:id");

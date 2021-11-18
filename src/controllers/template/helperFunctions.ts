@@ -202,6 +202,14 @@ export const getTemplateImage = (templateId: string, fields: field[]) => {
 					container: undefined as unknown as string,
 				});
 				const layer = new konva.Layer();
+				const rect = new konva.Rect({
+					x: 0,
+					y: 0,
+					height: template.canvas.height,
+					width: template.canvas.width,
+					fill: "white",
+				});
+				layer.add(rect);
 				stage.x(0);
 				stage.y(0);
 				stage.height(template.canvas.height);
@@ -210,7 +218,10 @@ export const getTemplateImage = (templateId: string, fields: field[]) => {
 				stage.scaleY(1);
 				stage.add(layer);
 				items.forEach((item) => layer.add(item));
-				const img = stage.toDataURL({ pixelRatio: 3, mimeType: "image/jpeg" });
+				const img = stage.toDataURL({
+					pixelRatio: 1.5,
+					mimeType: "image/jpeg",
+				});
 				console.log("Items loaded into Konva layer by toDataURL()");
 				const data = img.replace(/^data:image\/\w+;base64,/, "");
 				// eslint-disable-next-line no-undef

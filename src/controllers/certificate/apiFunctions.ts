@@ -90,7 +90,8 @@ export const createSingleCertificate_ = (
 				return setDoc(userRef, x);
 			})
 			.then(() => resolve(true))
-			.catch(() => {
+			.catch((e) => {
+				console.log(e);
 				resolve(false);
 			});
 	});

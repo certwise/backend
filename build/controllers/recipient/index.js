@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.deleteRecipient = exports.updateRecipient = exports.getRecipient = exports.createRecipient = void 0;
+exports.getAllRecipientsInInstitution = exports.deleteRecipient = exports.updateRecipient = exports.getRecipient = exports.createRecipient = void 0;
 var functions_1 = require("./functions");
 var createRecipient = function (req, res) {
     (0, functions_1.createRecipient_)(req.body.recipient, req.body.institutionId).then(function (recipient) {
@@ -33,3 +33,12 @@ var deleteRecipient = function (req, res) {
     res.send("Recipient test");
 };
 exports.deleteRecipient = deleteRecipient;
+var getAllRecipientsInInstitution = function (req, res) {
+    (0, functions_1.getAllRecipientsInInstitution_)(req.params.institutionId).then(function (all) {
+        if (all)
+            res.send(all);
+        else
+            res.status(400).send({ message: "Error getting recipients" });
+    });
+};
+exports.getAllRecipientsInInstitution = getAllRecipientsInInstitution;
