@@ -8,7 +8,7 @@ export type certificate = {
 	createdAt: Date;
 	lastUpdated: Date;
 	validTill: Date | true | undefined;
-	recipient: recipient;
+	recipient: string;
 	fields: Array<Field>;
 	storageRef?: string;
 };

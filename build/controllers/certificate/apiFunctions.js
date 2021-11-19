@@ -10,6 +10,25 @@ var __assign = (this && this.__assign) || function () {
     };
     return __assign.apply(this, arguments);
 };
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    __setModuleDefault(result, mod);
+    return result;
+};
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
@@ -55,6 +74,12 @@ var firestore_1 = require("firebase/firestore");
 var storage_1 = require("firebase/storage");
 var fs_1 = __importDefault(require("fs"));
 var helperFunctions_1 = require("../template/helperFunctions");
+var mailersend_1 = __importStar(require("mailersend"));
+var dotenv_1 = __importDefault(require("dotenv"));
+dotenv_1.default.config();
+var mailersend = new mailersend_1.default({
+    api_key: process.env.MAILERSEND_API_KEY,
+});
 var getCertificate_ = function () {
     return null;
 };
@@ -89,7 +114,7 @@ exports.getAllCertificatesByUID_ = getAllCertificatesByUID_;
 var createSingleCertificate_ = function (cert) {
     var templateId = cert.templateId.replace(/\s/g, "");
     var fields = cert.fields;
-    var certificateName = cert.recipient.name + "_" + (0, helperFunctions_1.makeid)(12) + ".jpg";
+    var certificateName = cert.recipient + "_" + (0, helperFunctions_1.makeid)(12) + ".jpg";
     var certificateRef = cert.issuerId + "/certificates/" + certificateName;
     var db = (0, firestore_1.getFirestore)();
     var certificateId = "";
@@ -128,7 +153,20 @@ var createSingleCertificate_ = function (cert) {
             x.numberOfCerificatesCreated++;
             return (0, firestore_1.setDoc)(userRef, x);
         })
-            .then(function () { return resolve(true); })
+            .then(function () {
+            var store = (0, storage_1.getStorage)();
+            var storageRef = (0, storage_1.ref)(store, certificateRef);
+            return (0, storage_1.getDownloadURL)(storageRef);
+        })
+            .then(function (imageLink) {
+            var db = (0, firestore_1.getFirestore)();
+            var rDoc = (0, firestore_1.doc)((0, firestore_1.collection)(db, "recipients"), cert.recipient);
+            (0, firestore_1.getDoc)(rDoc).then(function (recipient) {
+                var _a, _b;
+                sendMail((_a = recipient.data()) === null || _a === void 0 ? void 0 : _a.email, (_b = recipient.data()) === null || _b === void 0 ? void 0 : _b.name, imageLink);
+                resolve(true);
+            });
+        })
             .catch(function (e) {
             console.log(e);
             resolve(false);
@@ -166,9 +204,29 @@ var bulkCreateCertificates_ = function () {
     return null;
 };
 exports.bulkCreateCertificates_ = bulkCreateCertificates_;
-var updateCertificate_ = function () {
-    return null;
-};
+var updateCertificate_ = function (certificate) { return __awaiter(void 0, void 0, void 0, function () {
+    var db, cert, x, err_3;
+    return __generator(this, function (_a) {
+        switch (_a.label) {
+            case 0:
+                db = (0, firestore_1.getFirestore)();
+                _a.label = 1;
+            case 1:
+                _a.trys.push([1, 3, , 4]);
+                cert = (0, firestore_1.doc)((0, firestore_1.collection)(db, "certificates"), certificate.id);
+                return [4 /*yield*/, (0, firestore_1.setDoc)(cert, certificate)];
+            case 2:
+                x = _a.sent();
+                console.log(x);
+                return [3 /*break*/, 4];
+            case 3:
+                err_3 = _a.sent();
+                console.log(err_3);
+                return [2 /*return*/, false];
+            case 4: return [2 /*return*/];
+        }
+    });
+}); };
 exports.updateCertificate_ = updateCertificate_;
 var bulkUpdateCertificates_ = function () {
     return null;
@@ -182,3 +240,30 @@ var bulkDeleteCertificates_ = function () {
     return null;
 };
 exports.bulkDeleteCertificates_ = bulkDeleteCertificates_;
+var sendMail = function (email, name, imageLink) {
+    console.log("Sending mail", email, name, imageLink);
+    var recipients = [new mailersend_1.Recipient(email, name)];
+    var personalization = [
+        {
+            email: email,
+            data: {
+                name: name,
+                issuer: {
+                    name: "Sivaram",
+                },
+                credential: {
+                    link: imageLink,
+                    reason: "Certificate",
+                },
+            },
+        },
+    ];
+    var emailParams = new mailersend_1.EmailParams()
+        .setFrom("credential_noreply@notify.certwise.app")
+        .setFromName("Certwise")
+        .setRecipients(recipients)
+        .setSubject("Digital Credential")
+        .setTemplateId("pr9084z2j84w63dn")
+        .setPersonalization(personalization);
+    mailersend.send(emailParams);
+};

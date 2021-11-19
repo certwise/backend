@@ -3,6 +3,7 @@ import {
 	createSingleCertificate_,
 	getAllCertificatesByUID_,
 	getCertificatesByTemplate_,
+	updateCertificate_,
 } from "./apiFunctions";
 
 export const getCertificate = (req: Request, res: Response) => {
@@ -37,7 +38,10 @@ export const bulkCreateCertificates = (req: Request, res: Response) => {
 };
 
 export const updateCertificate = (req: Request, res: Response) => {
-	res.send("Test");
+	updateCertificate_(req.body).then((result) => {
+		if (result) res.status(200).send(result);
+		else res.status(400).send(result);
+	});
 };
 
 export const bulkUpdateCertificates = (req: Request, res: Response) => {

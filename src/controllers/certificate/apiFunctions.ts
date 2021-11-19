@@ -9,12 +9,18 @@ import {
 	query,
 	where,
 } from "firebase/firestore";
-import { getStorage, uploadBytes, ref } from "firebase/storage";
+import { getStorage, uploadBytes, ref, getDownloadURL } from "firebase/storage";
 import fs from "fs";
 import { certificate } from "../../types/certificate";
 import { template } from "../../types/template";
 import { user } from "../../types/user";
 import { getTemplateImage, makeid } from "../template/helperFunctions";
+import MailerSend, { Recipient, EmailParams } from "mailersend";
+import dotenv from "dotenv";
+dotenv.config();
+const mailersend = new MailerSend({
+	api_key: process.env.MAILERSEND_API_KEY,
+});
 
 export const getCertificate_ = () => {
 	return null;
@@ -46,7 +52,7 @@ export const createSingleCertificate_ = (
 ): Promise<boolean> => {
 	const templateId = cert.templateId.replace(/\s/g, "");
 	const fields = cert.fields;
-	const certificateName = `${cert.recipient.name}_${makeid(12)}.jpg`;
+	const certificateName = `${cert.recipient}_${makeid(12)}.jpg`;
 	const certificateRef = `${cert.issuerId}/certificates/${certificateName}`;
 	const db = getFirestore();
 	let certificateId = "";
@@ -86,10 +92,21 @@ export const createSingleCertificate_ = (
 				const x: user = user.data() as user;
 				const userRef = doc(collection(db, "users"), cert.issuerId);
 				x.numberOfCerificatesCreated++;
-
 				return setDoc(userRef, x);
 			})
-			.then(() => resolve(true))
+			.then(() => {
+				const store = getStorage();
+				const storageRef = ref(store, certificateRef);
+				return getDownloadURL(storageRef);
+			})
+			.then((imageLink) => {
+				const db = getFirestore();
+				const rDoc = doc(collection(db, "recipients"), cert.recipient);
+				getDoc(rDoc).then((recipient) => {
+					sendMail(recipient.data()?.email, recipient.data()?.name, imageLink);
+					resolve(true);
+				});
+			})
 			.catch((e) => {
 				console.log(e);
 				resolve(false);
@@ -120,8 +137,16 @@ export const getCertificatesByTemplate_ = async (
 export const bulkCreateCertificates_ = () => {
 	return null;
 };
-export const updateCertificate_ = () => {
-	return null;
+export const updateCertificate_ = async (certificate: any) => {
+	const db = getFirestore();
+	try {
+		const cert = doc(collection(db, "certificates"), certificate.id);
+		const x = await setDoc(cert, certificate);
+		console.log(x);
+	} catch (err) {
+		console.log(err);
+		return false;
+	}
 };
 export const bulkUpdateCertificates_ = () => {
 	return null;
@@ -131,4 +156,32 @@ export const deleteCertificate_ = () => {
 };
 export const bulkDeleteCertificates_ = () => {
 	return null;
+};
+
+const sendMail = (email: any, name: any, imageLink: any) => {
+	console.log("Sending mail", email, name, imageLink);
+	const recipients = [new Recipient(email, name)];
+	const personalization = [
+		{
+			email,
+			data: {
+				name,
+				issuer: {
+					name: "Sivaram",
+				},
+				credential: {
+					link: imageLink,
+					reason: "Certificate",
+				},
+			},
+		},
+	];
+	const emailParams = new EmailParams()
+		.setFrom("credential_noreply@notify.certwise.app")
+		.setFromName("Certwise")
+		.setRecipients(recipients)
+		.setSubject("Digital Credential")
+		.setTemplateId("pr9084z2j84w63dn")
+		.setPersonalization(personalization);
+	mailersend.send(emailParams);
 };

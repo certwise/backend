@@ -9,7 +9,8 @@ import recipientRoutes from "./routes/recipient";
 import institutionRoutes from "./routes/institution";
 import groupRoutes from "./routes/group";
 const app = express();
-
+import dotenv from "dotenv";
+dotenv.config();
 app.use(cors());
 
 app.use(express.urlencoded({ extended: true }));
@@ -40,4 +41,6 @@ app.get("/", (req, res) => {
 	res.send("CertWise Api");
 });
 
-app.listen(env.PORT, () => console.log(`Server started at port ${env.PORT}`));
+app.listen(env.PORT, () =>
+	console.log(`Server started at port ${process.env.PORT}`)
+);

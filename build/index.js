@@ -14,6 +14,8 @@ var recipient_1 = __importDefault(require("./routes/recipient"));
 var institution_1 = __importDefault(require("./routes/institution"));
 var group_1 = __importDefault(require("./routes/group"));
 var app = (0, express_1.default)();
+var dotenv_1 = __importDefault(require("dotenv"));
+dotenv_1.default.config();
 app.use((0, cors_1.default)());
 app.use(express_1.default.urlencoded({ extended: true }));
 app.use(function (req, res, next) {
@@ -37,4 +39,6 @@ app.get("/", function (req, res) {
     console.log("hello", req.hostname);
     res.send("CertWise Api");
 });
-app.listen(config_1.default.PORT, function () { return console.log("Server started at port " + config_1.default.PORT); });
+app.listen(config_1.default.PORT, function () {
+    return console.log("Server started at port " + process.env.PORT);
+});

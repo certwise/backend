@@ -40,7 +40,12 @@ var bulkCreateCertificates = function (req, res) {
 };
 exports.bulkCreateCertificates = bulkCreateCertificates;
 var updateCertificate = function (req, res) {
-    res.send("Test");
+    (0, apiFunctions_1.updateCertificate_)(req.body).then(function (result) {
+        if (result)
+            res.status(200).send(result);
+        else
+            res.status(400).send(result);
+    });
 };
 exports.updateCertificate = updateCertificate;
 var bulkUpdateCertificates = function (req, res) {
