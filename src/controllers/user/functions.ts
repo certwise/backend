@@ -9,7 +9,7 @@ import {
 	query,
 	where,
 } from "firebase/firestore";
-import { user } from "../../types/user";
+import { user } from "../../models/user";
 import { createStripeCustomer } from "../payment";
 
 const db = getFirestore();

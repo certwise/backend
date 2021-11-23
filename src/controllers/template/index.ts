@@ -1,4 +1,4 @@
-import { template } from "../../types/template";
+import { ITemplate } from "../../models/template";
 import { Request, Response } from "express";
 import {
 	createTemplate_,
@@ -14,7 +14,7 @@ import {
 } from "./apiFunctions";
 
 export const createTemplate = (req: Request, res: Response) => {
-	const template = req.body as template;
+	const template = req.body as ITemplate;
 	createTemplate_(template).then((result) => {
 		if (result !== false) res.status(200).send(result);
 		else res.status(400).send(result);
@@ -38,7 +38,7 @@ export const getTemplatesByUid = async (req: Request, res: Response) => {
 };
 
 export const updateTemplate = async (req: Request, res: Response) => {
-	updateTemplate_(req.body as template).then((result) => {
+	updateTemplate_(req.body as ITemplate).then((result) => {
 		if (result) res.status(200).send(result);
 		else res.status(400).send(result);
 	});

@@ -11,9 +11,9 @@ import {
 } from "firebase/firestore";
 import { getStorage, uploadBytes, ref, getDownloadURL } from "firebase/storage";
 import fs from "fs";
-import { certificate } from "../../types/certificate";
-import { template } from "../../types/template";
-import { user } from "../../types/user";
+import { ICertificate } from "../../models/certificate";
+import { ITemplate as template } from "../../models/template";
+import { user } from "../../models/user";
 import { getTemplateImage, makeid } from "../template/helperFunctions";
 import dotenv from "dotenv";
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
@@ -29,17 +29,17 @@ export const getCertificate_ = () => {
 };
 export const getAllCertificatesByUID_ = async (
 	uid: string
-): Promise<certificate[] | false> => {
+): Promise<ICertificate[] | false> => {
 	const db = getFirestore();
-	const result: certificate[] = [];
+	const result: ICertificate[] = [];
 	try {
 		const docs = await getDocs(
 			query(collection(db, "certificates"), where("issuerId", "==", uid))
 		);
 		docs.forEach((doc) => {
-			const x: certificate = {
+			const x: ICertificate = {
 				id: doc.id.toString(),
-				...(doc.data() as certificate),
+				...(doc.data() as ICertificate),
 			};
 			result.push(x);
 		});
@@ -50,7 +50,7 @@ export const getAllCertificatesByUID_ = async (
 	}
 };
 export const createSingleCertificate_ = (
-	cert: certificate
+	cert: ICertificate
 ): Promise<boolean> => {
 	const templateId = cert.templateId.replace(/\s/g, "");
 	const fields = cert.fields;
@@ -68,7 +68,7 @@ export const createSingleCertificate_ = (
 			})
 			.then(() => {
 				console.log("File uploaded");
-				const certificate: certificate = {
+				const certificate: ICertificate = {
 					...cert,
 					storageRef: certificateRef,
 				};
@@ -117,9 +117,9 @@ export const createSingleCertificate_ = (
 };
 export const getCertificatesByTemplate_ = async (
 	templateId: string
-): Promise<certificate[] | false> => {
+): Promise<ICertificate[] | false> => {
 	const db = getFirestore();
-	const result: certificate[] = [];
+	const result: ICertificate[] = [];
 	try {
 		const docs = await getDocs(
 			query(
@@ -128,7 +128,7 @@ export const getCertificatesByTemplate_ = async (
 			)
 		);
 		docs.forEach((doc) => {
-			result.push({ id: doc.id, ...(doc.data() as certificate) });
+			result.push({ id: doc.id, ...(doc.data() as ICertificate) });
 		});
 		return result;
 	} catch (err) {
@@ -139,7 +139,7 @@ export const getCertificatesByTemplate_ = async (
 export const bulkCreateCertificates_ = () => {
 	return null;
 };
-export const updateCertificate_ = async (certificate: any) => {
+export const updateCertificate_ = async (certificate: ICertificate) => {
 	const db = getFirestore();
 	try {
 		const cert = doc(collection(db, "certificates"), certificate.id);

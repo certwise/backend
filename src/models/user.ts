@@ -6,7 +6,7 @@ export type user = {
 	isVerified: boolean;
 	createdAt: Date;
 	photoURL?: string;
-	updatedAt?: Date;
+	updatedAt: Date;
 	numberOfTemplatesCreated: number;
 	numberOfCerificatesCreated: number;
 };

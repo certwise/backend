@@ -1,4 +1,4 @@
-import { isTemplate, items, template } from "../../types/template";
+import { isTemplate, Items, ITemplate } from "../../models/template";
 import { getTemplateFields } from "./helperFunctions";
 import {
 	getFirestore,
@@ -12,10 +12,10 @@ import {
 	deleteDoc,
 	query,
 } from "firebase/firestore";
-import { user } from "../../types/user";
+import { user } from "../../models/user";
 
 export const createTemplate_ = async (
-	template: template
+	template: ITemplate
 ): Promise<string | false> => {
 	const db = getFirestore();
 	if (isTemplate(template)) {
@@ -47,14 +47,14 @@ export const createTemplate_ = async (
 
 export const getTemplateById_ = async (
 	id: string
-): Promise<template | false> => {
+): Promise<ITemplate | false> => {
 	const db = getFirestore();
 	try {
 		const template = await getDoc(doc(db, "templates", id));
 		console.log("Getting template with id: ", id);
 		if (template.data()) {
-			console.log("Template data: ", template.data() as template);
-			return { ...(template.data() as template), id: template.id };
+			console.log("Template data: ", template.data() as ITemplate);
+			return { ...(template.data() as ITemplate), id: template.id };
 		} else {
 			console.error("Template does not exist");
 			return false;
@@ -67,15 +67,15 @@ export const getTemplateById_ = async (
 
 export const getTemplatesByUid_ = async (
 	uid: string
-): Promise<template[] | false> => {
+): Promise<ITemplate[] | false> => {
 	const db = getFirestore();
-	const result: template[] = [];
+	const result: ITemplate[] = [];
 	try {
 		const templates = await getDocs(
 			query(collection(db, "templates"), where("uid", "==", uid))
 		);
 		templates.forEach((res) => {
-			result.push({ ...(res.data() as template), id: res.id });
+			result.push({ ...(res.data() as ITemplate), id: res.id });
 		});
 		console.log("Getting templates of user with uid :", uid);
 		console.log("Result :", result);
@@ -106,7 +106,9 @@ export const deleteTemplate_ = async (id: string): Promise<boolean> => {
 	}
 };
 
-export const updateTemplate_ = async (template: template): Promise<boolean> => {
+export const updateTemplate_ = async (
+	template: ITemplate
+): Promise<boolean> => {
 	const db = getFirestore();
 	console.log("Updating");
 	if (isTemplate(template) && template.id !== undefined) {
@@ -127,7 +129,7 @@ export const updateTemplate_ = async (template: template): Promise<boolean> => {
 	}
 };
 
-export const updateItems_ = (templateId: string, items: items) => {
+export const updateItems_ = (templateId: string, items: Items) => {
 	return templateId + items;
 };
 
@@ -195,7 +197,7 @@ export const getTemplatesNamesByUid_ = async (
 export const getTemplateByNameAndUid_ = async (
 	templateName: string,
 	uid: string
-): Promise<template | false> => {
+): Promise<ITemplate | false> => {
 	console.log("Getting template by name and uid - ", templateName, uid);
 	return new Promise((resolve) => {
 		const db = getFirestore();
@@ -207,9 +209,9 @@ export const getTemplateByNameAndUid_ = async (
 						templateName
 					) {
 						resolve({
-							...(template.data() as template),
+							...(template.data() as ITemplate),
 							id: template.id,
-						} as template);
+						} as ITemplate);
 					}
 				});
 			}

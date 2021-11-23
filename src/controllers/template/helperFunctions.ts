@@ -5,8 +5,12 @@ import env from "../../config";
 import konva from "konva/cmj";
 import canvas from "canvas";
 import axios from "axios";
-import { field, template, text } from "../../types/template";
-import { image } from "../../types/template";
+import {
+	TemplateField as Field,
+	ITemplate,
+	Text as text,
+} from "../../models/template";
+import { Image as image } from "../../models/template";
 import { Image } from "konva/cmj/shapes/Image";
 import { Text } from "konva/cmj/shapes/Text";
 
@@ -25,9 +29,9 @@ const getTemplate = async (templateId: string) => {
  */
 export const getLoadedImage = (item: image): Promise<Image> => {
 	return new Promise((resolve, reject) => {
-		if (item.imageStorageRef) {
-			console.log(item.imageStorageRef);
-			getDownloadURL(ref(getStorage(), item.imageStorageRef))
+		if (item.storageRef) {
+			console.log(item.storageRef);
+			getDownloadURL(ref(getStorage(), item.storageRef))
 				.then((url) => {
 					konva.Image.fromURL(url, (image: Image) => {
 						image.x(item.x);
@@ -64,7 +68,7 @@ export const getLoadedText = (item: text, textValue: string): Promise<Text> => {
 			text: textValue,
 			fontSize: item.fontSize,
 			fontFamily: item.fontFamily,
-			align: item.textAlign || "center",
+			align: item.horizontalAlign || "center",
 			fill: item.fill,
 			id: item.id,
 			rotation: item.rotation || 0,
@@ -86,7 +90,7 @@ export const getLoadedText = (item: text, textValue: string): Promise<Text> => {
  */
 type fontPath = { path: string; family: string };
 export const getAllFontsFromTemplate = (
-	template: template,
+	template: ITemplate,
 	pathDir: string
 ) => {
 	console.log("Getting fonts from templatesss");
@@ -163,13 +167,13 @@ const downloadFile = (
 	});
 };
 
-export const getTemplateImage = (templateId: string, fields: field[]) => {
+export const getTemplateImage = (templateId: string, fields: Field[]) => {
 	return new Promise((resolve, reject) => {
-		let template: template;
+		let template: ITemplate;
 		const pathDir = `./storage/fonts/`;
 		getTemplate(templateId)
 			.then((temp) => {
-				template = temp.data() as template;
+				template = temp.data() as ITemplate;
 				console.log(Object.keys(template));
 				return getAllFontsFromTemplate(template, pathDir);
 			})
@@ -245,7 +249,7 @@ export const getTemplateFields = (templateId: string): Promise<string[]> => {
 		getTemplate(templateId)
 			.then((template) => {
 				console.log(template.data());
-				const data: template = template.data() as template;
+				const data: ITemplate = template.data() as ITemplate;
 				console.log("Data:", Object.keys(data));
 				const fields: string[] = [];
 				data.canvas.items.forEach((item) => {
@@ -280,7 +284,7 @@ export const getTemplateFields2 = (templateId: string): Promise<string[]> => {
 		getTemplate(templateId)
 			.then((template) => {
 				console.log(template.data());
-				const data: template = template.data() as template;
+				const data: ITemplate = template.data() as ITemplate;
 				console.log("Data:", Object.keys(data));
 				const fields: string[] = [];
 				data.canvas.items.forEach((item) => {
