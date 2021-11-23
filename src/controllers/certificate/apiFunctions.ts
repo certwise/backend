@@ -15,8 +15,10 @@ import { certificate } from "../../types/certificate";
 import { template } from "../../types/template";
 import { user } from "../../types/user";
 import { getTemplateImage, makeid } from "../template/helperFunctions";
-import MailerSend, { Recipient, EmailParams } from "mailersend";
 import dotenv from "dotenv";
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore
+import MailerSend, { Recipient, EmailParams } from "mailersend";
 dotenv.config();
 const mailersend = new MailerSend({
 	api_key: process.env.MAILERSEND_API_KEY,

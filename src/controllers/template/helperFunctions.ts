@@ -273,3 +273,27 @@ export const makeid = (length: number) => {
 	}
 	return result;
 };
+
+export const getTemplateFields2 = (templateId: string): Promise<string[]> => {
+	console.log("getTemplateFields()");
+	return new Promise((resolve, reject) => {
+		getTemplate(templateId)
+			.then((template) => {
+				console.log(template.data());
+				const data: template = template.data() as template;
+				console.log("Data:", Object.keys(data));
+				const fields: string[] = [];
+				data.canvas.items.forEach((item) => {
+					if (item.type === "text") {
+						if (!item.isConstant) fields.push(item.name);
+					}
+				});
+				console.log(fields);
+				resolve(fields);
+			})
+			.catch((err) => {
+				reject(err);
+				console.log(err);
+			});
+	});
+};
