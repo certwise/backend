@@ -12,6 +12,8 @@ import {
 } from "firebase/firestore";
 import { IGroup } from "../models/group";
 import { IOrganization } from "../models/organization";
+import dotenv from "dotenv";
+dotenv.config();
 
 const db = getFirestore();
 const groupsCollection = collection(db, "groups");
@@ -59,4 +61,5 @@ export const update = async (group: IGroup) => {
 export const deleteGroup = async (groupId: string) => {
 	const groupRef = doc(groupsCollection, groupId);
 	await deleteDoc(groupRef);
+	return;
 };

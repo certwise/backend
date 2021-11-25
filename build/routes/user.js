@@ -25,9 +25,8 @@ Object.defineProperty(exports, "__esModule", { value: true });
 var express_1 = __importDefault(require("express"));
 var controllers = __importStar(require("../controllers/user"));
 var router = express_1.default.Router();
-router.get("/:uid", controllers.getUser);
-router.post("/", controllers.createUser);
-router.post("/stripeCustomer", controllers.createStripeCustomer);
-router.put("/", controllers.updateUser);
+router.get("/:uid", controllers.get);
+router.post("/", controllers.create);
+router.put("/", controllers.update);
 // router.delete('/:id', deleteUser)
 exports.default = router;

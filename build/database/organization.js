@@ -1,4 +1,15 @@
 "use strict";
+var __assign = (this && this.__assign) || function () {
+    __assign = Object.assign || function(t) {
+        for (var s, i = 1, n = arguments.length; i < n; i++) {
+            s = arguments[i];
+            for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p))
+                t[p] = s[p];
+        }
+        return t;
+    };
+    return __assign.apply(this, arguments);
+};
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
@@ -35,71 +46,58 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
         if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
     }
 };
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.createCheckoutSession = exports.createStripeCustomer = void 0;
-var stripe_1 = __importDefault(require("stripe"));
-var stripe = new stripe_1.default("sk_test_3f9jVdJkeCc6nc4NTEgey2Mo", {
-    apiVersion: "2020-08-27",
-});
-var priceIdCertWiseStandardINR = "price_1JrnC5LZFyxWm134FdDciOcE";
-var createStripeCustomer = function (name, email) { return __awaiter(void 0, void 0, void 0, function () {
-    var customer, e_1;
+exports.update = exports.get = exports.create = void 0;
+var firestore_1 = require("firebase/firestore");
+var db = (0, firestore_1.getFirestore)();
+var orgCollection = (0, firestore_1.collection)(db, "organizations");
+var create = function (organization) { return __awaiter(void 0, void 0, void 0, function () {
+    var org, userCollection, uDoc, user, userData;
     return __generator(this, function (_a) {
         switch (_a.label) {
-            case 0:
-                _a.trys.push([0, 2, , 3]);
-                return [4 /*yield*/, stripe.customers.create({
-                        name: name,
-                        email: email,
-                    })];
+            case 0: return [4 /*yield*/, (0, firestore_1.addDoc)(orgCollection, organization)];
             case 1:
-                customer = _a.sent();
-                console.log("Creating Stripe Customer:", customer, name, email);
-                return [2 /*return*/, customer.id];
+                org = _a.sent();
+                userCollection = (0, firestore_1.collection)(db, "users");
+                uDoc = (0, firestore_1.doc)(userCollection, organization.createdBy);
+                return [4 /*yield*/, (0, firestore_1.getDoc)(uDoc)];
             case 2:
-                e_1 = _a.sent();
-                console.log(e_1);
-                return [2 /*return*/, false];
-            case 3: return [2 /*return*/];
+                user = _a.sent();
+                userData = __assign({ uid: user.id }, user.data());
+                userData.organization = org.id;
+                return [4 /*yield*/, (0, firestore_1.setDoc)(uDoc, userData)];
+            case 3:
+                _a.sent();
+                return [2 /*return*/, __assign(__assign({}, organization), { id: org.id })];
         }
     });
 }); };
-exports.createStripeCustomer = createStripeCustomer;
-var createCheckoutSession = function (req, res) { return __awaiter(void 0, void 0, void 0, function () {
-    var price, trial, session;
+exports.create = create;
+var get = function (organizationId) { return __awaiter(void 0, void 0, void 0, function () {
+    var orgDoc, org;
     return __generator(this, function (_a) {
         switch (_a.label) {
             case 0:
-                console.log("createCheckoutSession", req.body);
-                price = priceIdCertWiseStandardINR;
-                trial = undefined;
-                if (req.body.plan === "trial")
-                    trial = 7;
-                return [4 /*yield*/, stripe.checkout.sessions.create({
-                        payment_method_types: ["card"],
-                        line_items: [
-                            {
-                                quantity: 1,
-                                price: price,
-                            },
-                        ],
-                        customer: req.body.customerId,
-                        mode: "subscription",
-                        success_url: "http://localhost:3000/payments/success?session_id={CHECKOUT_SESSION_ID}",
-                        cancel_url: "http://localhost:3000/payments/fail",
-                        subscription_data: {
-                            trial_period_days: trial,
-                        },
-                    })];
+                orgDoc = (0, firestore_1.doc)(orgCollection, organizationId);
+                return [4 /*yield*/, (0, firestore_1.getDoc)(orgDoc)];
             case 1:
-                session = _a.sent();
-                console.log("session", session);
-                res.status(200).send({ url: session.url });
-                return [2 /*return*/];
+                org = _a.sent();
+                return [2 /*return*/, __assign(__assign({}, org.data()), { id: org.id })];
         }
     });
 }); };
-exports.createCheckoutSession = createCheckoutSession;
+exports.get = get;
+var update = function (organization) { return __awaiter(void 0, void 0, void 0, function () {
+    var orgDoc;
+    return __generator(this, function (_a) {
+        switch (_a.label) {
+            case 0:
+                orgDoc = (0, firestore_1.doc)(orgCollection, organization.id);
+                return [4 /*yield*/, (0, firestore_1.setDoc)(orgDoc, organization)];
+            case 1:
+                _a.sent();
+                return [2 /*return*/, organization];
+        }
+    });
+}); };
+exports.update = update;

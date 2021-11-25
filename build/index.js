@@ -11,7 +11,7 @@ var certificate_1 = __importDefault(require("./routes/certificate"));
 var payment_1 = __importDefault(require("./routes/payment"));
 var user_1 = __importDefault(require("./routes/user"));
 var recipient_1 = __importDefault(require("./routes/recipient"));
-var institution_1 = __importDefault(require("./routes/institution"));
+var organization_1 = __importDefault(require("./routes/organization"));
 var group_1 = __importDefault(require("./routes/group"));
 var app = (0, express_1.default)();
 var dotenv_1 = __importDefault(require("dotenv"));
@@ -33,7 +33,7 @@ app.use("/certificate", certificate_1.default);
 app.use("/payment", payment_1.default);
 app.use("/recipient", recipient_1.default);
 app.use("/user", user_1.default);
-app.use("/institution", institution_1.default);
+app.use("/organization", organization_1.default);
 app.use("/group", group_1.default);
 app.get("/", function (req, res) {
     console.log("hello", req.hostname);

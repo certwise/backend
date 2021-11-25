@@ -23,11 +23,10 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 var express_1 = __importDefault(require("express"));
-var controllers = __importStar(require("../controllers/institution"));
+var controllers = __importStar(require("../controllers/organization"));
 var router = express_1.default.Router();
-router.get("/:id", controllers.getInstitution);
-router.post("/", controllers.createInstitution);
-router.put("/", controllers.updateInstitution);
-router.put("/customFields", controllers.setCustomFields);
+router.get("/:id", controllers.get);
+router.post("/", controllers.create);
+router.put("/", controllers.update);
 router.delete("/:id");
 exports.default = router;

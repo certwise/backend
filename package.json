@@ -5,6 +5,7 @@
 	"main": "index.js",
 	"scripts": {
 		"start": "cd build && node index.js",
+		"dev": "cd src && nodemon index.ts",
 		"lint": "eslint"
 	},
 	"author": "",
@@ -24,6 +25,7 @@
 		"joi": "^17.4.2",
 		"konva": "^8.2.2",
 		"mailersend": "^1.2.0",
+		"monk": "^7.3.4",
 		"pdf-form-utils": "^1.0.4",
 		"stripe": "^8.184.0",
 		"tsc": "^2.0.3",

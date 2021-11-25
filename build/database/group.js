@@ -46,90 +46,99 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
         if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
     }
 };
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.updateGroup_ = exports.createGroup_ = exports.getGroups_ = exports.getGroup_ = void 0;
+exports.deleteGroup = exports.update = exports.getByOrganization = exports.getOne = exports.create = void 0;
 var firestore_1 = require("firebase/firestore");
+var dotenv_1 = __importDefault(require("dotenv"));
+dotenv_1.default.config();
 var db = (0, firestore_1.getFirestore)();
-var getGroup_ = function (id) { return __awaiter(void 0, void 0, void 0, function () {
-    var group, e_1;
+var groupsCollection = (0, firestore_1.collection)(db, "groups");
+var create = function (group) { return __awaiter(void 0, void 0, void 0, function () {
+    var groupRef, orgRef, orgDoc, orgRes, org;
     return __generator(this, function (_a) {
         switch (_a.label) {
-            case 0:
-                _a.trys.push([0, 2, , 3]);
-                return [4 /*yield*/, (0, firestore_1.getDoc)((0, firestore_1.doc)((0, firestore_1.collection)(db, "groups"), id))];
+            case 0: return [4 /*yield*/, (0, firestore_1.addDoc)(groupsCollection, group)];
             case 1:
-                group = _a.sent();
-                return [2 /*return*/, __assign(__assign({}, group.data()), { id: group.id })];
+                groupRef = _a.sent();
+                orgRef = (0, firestore_1.collection)(db, "organizations");
+                orgDoc = (0, firestore_1.doc)(orgRef, group.organization);
+                return [4 /*yield*/, (0, firestore_1.getDoc)(orgDoc)];
             case 2:
-                e_1 = _a.sent();
-                console.log(e_1);
-                return [2 /*return*/, false];
-            case 3: return [2 /*return*/];
+                orgRes = _a.sent();
+                org = orgRes.data();
+                if (org.groups)
+                    org.groups.push(groupRef.id);
+                else
+                    org.groups = [groupRef.id];
+                return [4 /*yield*/, (0, firestore_1.setDoc)(orgDoc, org)];
+            case 3:
+                _a.sent();
+                return [2 /*return*/, __assign({ id: groupRef.id }, group)];
         }
     });
 }); };
-exports.getGroup_ = getGroup_;
-var getGroups_ = function (institutionId) { return __awaiter(void 0, void 0, void 0, function () {
-    var group, groups_1, e_2;
+exports.create = create;
+var getOne = function (groupId) { return __awaiter(void 0, void 0, void 0, function () {
+    var groupRef, groupRes, group;
     return __generator(this, function (_a) {
         switch (_a.label) {
             case 0:
-                _a.trys.push([0, 2, , 3]);
-                return [4 /*yield*/, (0, firestore_1.getDocs)((0, firestore_1.collection)(db, "groups"))];
+                groupRef = (0, firestore_1.doc)(groupsCollection, groupId);
+                return [4 /*yield*/, (0, firestore_1.getDoc)(groupRef)];
             case 1:
-                group = _a.sent();
-                groups_1 = [];
-                group.forEach(function (g) {
-                    if (g.data().institution === institutionId)
-                        groups_1.push(__assign(__assign({}, g.data()), { id: g.id }));
+                groupRes = _a.sent();
+                group = __assign({ id: groupId }, groupRes.data());
+                return [2 /*return*/, group];
+        }
+    });
+}); };
+exports.getOne = getOne;
+var getByOrganization = function (organization) { return __awaiter(void 0, void 0, void 0, function () {
+    var gQuery, groups, res;
+    return __generator(this, function (_a) {
+        switch (_a.label) {
+            case 0:
+                gQuery = (0, firestore_1.query)(groupsCollection, (0, firestore_1.where)("organization", "==", organization));
+                return [4 /*yield*/, (0, firestore_1.getDocs)(gQuery)];
+            case 1:
+                groups = _a.sent();
+                res = [];
+                groups.forEach(function (group) {
+                    res.push(__assign(__assign({}, group.data()), { id: group.id }));
                 });
-                return [2 /*return*/, groups_1];
-            case 2:
-                e_2 = _a.sent();
-                console.log(e_2);
-                return [2 /*return*/, false];
-            case 3: return [2 /*return*/];
+                return [2 /*return*/, res];
         }
     });
 }); };
-exports.getGroups_ = getGroups_;
-var createGroup_ = function (group) { return __awaiter(void 0, void 0, void 0, function () {
-    var uDoc, doc_1, e_3;
+exports.getByOrganization = getByOrganization;
+var update = function (group) { return __awaiter(void 0, void 0, void 0, function () {
+    var groupRef;
     return __generator(this, function (_a) {
         switch (_a.label) {
             case 0:
-                _a.trys.push([0, 2, , 3]);
-                uDoc = (0, firestore_1.collection)(db, "groups");
-                return [4 /*yield*/, (0, firestore_1.addDoc)(uDoc, group)];
-            case 1:
-                doc_1 = _a.sent();
-                return [2 /*return*/, doc_1.id];
-            case 2:
-                e_3 = _a.sent();
-                console.log(e_3);
-                return [2 /*return*/, false];
-            case 3: return [2 /*return*/];
-        }
-    });
-}); };
-exports.createGroup_ = createGroup_;
-var updateGroup_ = function (group) { return __awaiter(void 0, void 0, void 0, function () {
-    var uDoc, e_4;
-    return __generator(this, function (_a) {
-        switch (_a.label) {
-            case 0:
-                _a.trys.push([0, 2, , 3]);
-                uDoc = (0, firestore_1.doc)((0, firestore_1.collection)(db, "groups"), group.id);
-                return [4 /*yield*/, (0, firestore_1.setDoc)(uDoc, group, { merge: true })];
+                groupRef = (0, firestore_1.doc)(groupsCollection, group.id);
+                return [4 /*yield*/, (0, firestore_1.setDoc)(groupRef, group)];
             case 1:
                 _a.sent();
-                return [2 /*return*/, true];
-            case 2:
-                e_4 = _a.sent();
-                console.log(e_4);
-                return [2 /*return*/, false];
-            case 3: return [2 /*return*/];
+                return [2 /*return*/, group];
         }
     });
 }); };
-exports.updateGroup_ = updateGroup_;
+exports.update = update;
+var deleteGroup = function (groupId) { return __awaiter(void 0, void 0, void 0, function () {
+    var groupRef;
+    return __generator(this, function (_a) {
+        switch (_a.label) {
+            case 0:
+                groupRef = (0, firestore_1.doc)(groupsCollection, groupId);
+                return [4 /*yield*/, (0, firestore_1.deleteDoc)(groupRef)];
+            case 1:
+                _a.sent();
+                return [2 /*return*/];
+        }
+    });
+}); };
+exports.deleteGroup = deleteGroup;

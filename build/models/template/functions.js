@@ -39,7 +39,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.makeid = exports.getTemplateFields = exports.getTemplateImage = exports.getAllFontsFromTemplate = exports.getLoadedText = exports.getLoadedImage = void 0;
+exports.replaceFieldsWithValue = exports.getFieldsFromString = exports.makeid = exports.getTemplateFields = exports.getTemplateImage = exports.getAllFontsFromTemplate = exports.getLoadedText = exports.getLoadedImage = void 0;
 var firestore_1 = require("firebase/firestore");
 var storage_1 = require("firebase/storage");
 var fs_1 = __importDefault(require("fs"));
@@ -64,9 +64,9 @@ var getTemplate = function (templateId) { return __awaiter(void 0, void 0, void 
  */
 var getLoadedImage = function (item) {
     return new Promise(function (resolve, reject) {
-        if (item.imageStorageRef) {
-            console.log(item.imageStorageRef);
-            (0, storage_1.getDownloadURL)((0, storage_1.ref)((0, storage_1.getStorage)(), item.imageStorageRef))
+        if (item.storageRef) {
+            console.log(item.storageRef);
+            (0, storage_1.getDownloadURL)((0, storage_1.ref)((0, storage_1.getStorage)(), item.storageRef))
                 .then(function (url) {
                 cmj_1.default.Image.fromURL(url, function (image) {
                     image.x(item.x);
@@ -93,7 +93,8 @@ exports.getLoadedImage = getLoadedImage;
 /***
  * pass in textItem and get the konva Text object that can be added to a layer
  */
-var getLoadedText = function (item, textValue) {
+var getLoadedText = function (item, fields) {
+    var textValue = (0, exports.replaceFieldsWithValue)(item.text, fields);
     return new Promise(function (resolve) {
         console.log("getLoadedText()");
         var text = new cmj_1.default.Text({
@@ -104,7 +105,7 @@ var getLoadedText = function (item, textValue) {
             text: textValue,
             fontSize: item.fontSize,
             fontFamily: item.fontFamily,
-            align: item.textAlign || "center",
+            align: item.horizontalAlign || "center",
             fill: item.fill,
             id: item.id,
             rotation: item.rotation || 0,
@@ -132,12 +133,12 @@ var getAllFontsFromTemplate = function (template, pathDir) {
                 var fontFamily = item.fontFamily;
                 if (fs_1.default.existsSync(pathDir + "/" + fontFamily.replace(/ /g, "-") + ".ttf")) {
                     console.log(fontFamily + " already exists");
-                    promises.push(getExistingFont(pathDir + "/" + fontFamily.replace(/ /g, "-") + ".ttf", fontFamily));
+                    promises.push(getExistingFonts(pathDir + "/" + fontFamily.replace(/ /g, "-") + ".ttf", fontFamily));
                 }
                 else {
                     //fs.mkdirSync(pathDir, { recursive: true })
                     console.log("Pushing to promises");
-                    var promise = downloadFile(fileLink, pathDir + "/" + fontFamily.replace(/ /g, "-") + ".ttf", fontFamily);
+                    var promise = downloadFontFile(fileLink, pathDir + "/" + fontFamily.replace(/ /g, "-") + ".ttf", fontFamily);
                     promises.push(promise);
                     console.log("Pushed to promises");
                 }
@@ -148,13 +149,13 @@ var getAllFontsFromTemplate = function (template, pathDir) {
     return Promise.all(promises);
 };
 exports.getAllFontsFromTemplate = getAllFontsFromTemplate;
-var getExistingFont = function (path, family) {
+var getExistingFonts = function (path, family) {
     return new Promise(function (resolve) { return resolve({ path: path, family: family }); });
 };
 /***
  * returns a promise that returns value with { path: outputLocationPath, family:family }
  */
-var downloadFile = function (fileUrl, outputLocationPath, family) {
+var downloadFontFile = function (fileUrl, outputLocationPath, family) {
     console.log("Downloading " + fileUrl + " to " + outputLocationPath);
     return new Promise(function (resolve, reject) {
         var writer = fs_1.default.createWriteStream(outputLocationPath);
@@ -174,7 +175,7 @@ var downloadFile = function (fileUrl, outputLocationPath, family) {
             writer.on("close", function () {
                 if (!error) {
                     resolve({ path: outputLocationPath, family: family });
-                    console.log("Resolved font object from downloadFile");
+                    console.log("Resolved font object from downloadFontFile");
                 }
             });
         })
@@ -191,7 +192,6 @@ var getTemplateImage = function (templateId, fields) {
         getTemplate(templateId)
             .then(function (temp) {
             template = temp.data();
-            console.log(Object.keys(template));
             return (0, exports.getAllFontsFromTemplate)(template, pathDir);
         })
             .then(function (fontsObj) {
@@ -201,13 +201,9 @@ var getTemplateImage = function (templateId, fields) {
             });
             var promises = [];
             template.canvas.items.map(function (item) {
-                var _a;
                 console.log(item.type);
                 if (item.type === "text") {
-                    if (item.isConstant)
-                        promises.push((0, exports.getLoadedText)(item, item.text));
-                    else
-                        promises.push((0, exports.getLoadedText)(item, (_a = fields.find(function (i) { return i.name === item.name; })) === null || _a === void 0 ? void 0 : _a.value));
+                    promises.push((0, exports.getLoadedText)(item, fields));
                 }
                 if (item.type === "image") {
                     promises.push((0, exports.getLoadedImage)(item));
@@ -246,9 +242,6 @@ var getTemplateImage = function (templateId, fields) {
             var buffer = Buffer.from(data, "base64");
             console.log("pathDir: " + pathDir);
             resolve(buffer);
-        })
-            .then(function () {
-            console.log("fonts folder deleted");
         })
             .catch(function (err) {
             console.log(err);
@@ -292,3 +285,22 @@ var makeid = function (length) {
     return result;
 };
 exports.makeid = makeid;
+var getFieldsFromString = function (string) {
+    var results = [];
+    var re = /{{([^}]+)}}/g;
+    var text;
+    while ((text = re.exec(string))) {
+        results.push(text[1]);
+    }
+    return results;
+};
+exports.getFieldsFromString = getFieldsFromString;
+var replaceFieldsWithValue = function (string, fields) {
+    var result = string;
+    fields.forEach(function (field) {
+        if (field.value)
+            result = result.replace("{{ " + field + " }}", field.value);
+    });
+    return result;
+};
+exports.replaceFieldsWithValue = replaceFieldsWithValue;
