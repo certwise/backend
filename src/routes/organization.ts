@@ -1,10 +1,8 @@
 import express from "express";
-import * as controllers from "../controllers/recipient";
+import * as controllers from "../controllers/organization";
 const router = express.Router();
 
 router.get("/:id", controllers.get);
-router.get("/organization/:organization", controllers.getByOrganization);
-router.get("/group/:group", controllers.getByGroup);
 
 router.post("/", controllers.create);
 

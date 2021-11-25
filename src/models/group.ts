@@ -5,22 +5,23 @@ export interface IGroup {
 	id?: string;
 	name: string;
 	description: string;
-	createdAt: string;
-	updatedAt: string;
+	createdAt: Date;
+	updatedAt: Date;
 	recipients: string[];
-	institution: string;
+	organization: string;
 	createdBy: string;
 	customFields: Field[];
+	certificates: string[];
 }
 
 export const groupSchema = Joi.object().keys({
-	id: Joi.string().required(),
+	id: Joi.string().optional(),
 	name: Joi.string().required(),
 	description: Joi.string().required(),
-	createdAt: Joi.string().required(),
-	updatedAt: Joi.string().required(),
+	createdAt: Joi.date().required(),
+	updatedAt: Joi.date().required(),
 	recipients: Joi.array().items(Joi.string()).required(),
-	institution: Joi.string().required(),
+	organization: Joi.string().required().allow(""),
 	createdBy: Joi.string().required(),
 	customFields: Joi.array()
 		.items(
@@ -30,29 +31,30 @@ export const groupSchema = Joi.object().keys({
 			})
 		)
 		.required(),
+	certificates: Joi.array().items(Joi.string()).required(),
 });
 
 export class Group implements IGroup {
 	id?: string;
 	name: string;
 	description: string;
-	createdAt: string;
-	updatedAt: string;
+	createdAt: Date;
+	updatedAt: Date;
 	recipients: string[];
-	institution: string;
+	organization: string;
 	createdBy: string;
 	customFields: Field[];
-
+	certificates: string[];
 	constructor(group: IGroup) {
-		this.id = group.id;
 		this.name = group.name;
 		this.description = group.description;
 		this.createdAt = group.createdAt;
 		this.updatedAt = group.updatedAt;
 		this.recipients = group.recipients;
-		this.institution = group.institution;
+		this.organization = group.organization;
 		this.createdBy = group.createdBy;
 		this.customFields = group.customFields;
+		this.certificates = group.certificates;
 	}
 
 	validate(): { error: boolean; message: string } {
@@ -70,12 +72,12 @@ export class Group implements IGroup {
 
 	create(dbCreateGroup: (group: IGroup) => Promise<IGroup>): Promise<IGroup> {
 		return new Promise((resolve, reject) => {
-			dbCreateGroup(this)
+			dbCreateGroup({ ...this })
 				.then((newGroup) => {
 					resolve(newGroup);
 				})
-				.catch(() => {
-					reject("Database writing error");
+				.catch((err) => {
+					reject("Database writing error" + err);
 				});
 		});
 	}
@@ -83,7 +85,7 @@ export class Group implements IGroup {
 	update(dbUpdateGroup: (group: IGroup) => Promise<IGroup>): Promise<IGroup> {
 		return new Promise((resolve, reject) => {
 			if (groupSchema.validate(this))
-				dbUpdateGroup(this)
+				dbUpdateGroup({ ...this })
 					.then((res) => {
 						resolve(res);
 					})
@@ -93,17 +95,18 @@ export class Group implements IGroup {
 		});
 	}
 
-	delete(dbDeleteGroup: (groupId: string) => Promise<boolean>): Promise<void> {
+	static delete(
+		groupId: string,
+		dbDeleteGroup: (groupId: string) => Promise<void>
+	): Promise<void> {
 		return new Promise((resolve, reject) => {
-			if (this.id) {
-				dbDeleteGroup(this.id)
-					.then(() => {
-						resolve();
-					})
-					.catch(() => {
-						reject("Database deleting error");
-					});
-			} else reject("Group has no id");
+			dbDeleteGroup(groupId)
+				.then(() => {
+					resolve();
+				})
+				.catch(() => {
+					reject("Database deleting error");
+				});
 		});
 	}
 
@@ -122,12 +125,12 @@ export class Group implements IGroup {
 		});
 	}
 
-	getMany(
-		institutionId: string,
-		dbGetGroups: (institutionId: string) => Promise<IGroup[]>
+	static getByOrganization(
+		organizationId: string,
+		dbGetGroups: (organizationId: string) => Promise<IGroup[]>
 	): Promise<IGroup[]> {
 		return new Promise((resolve, reject) => {
-			dbGetGroups(institutionId)
+			dbGetGroups(organizationId)
 				.then((groups) => {
 					resolve(groups);
 				})

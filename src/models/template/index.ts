@@ -1,4 +1,5 @@
 import Joi from "joi";
+import { MailTemplate } from "./MailTemplate";
 export interface ITemplate {
 	id?: string;
 	name: string;
@@ -9,10 +10,12 @@ export interface ITemplate {
 	canvas: Canvas;
 	numberOfCertificates: number;
 	imageRef: string;
-	group: string;
+	groups: string[];
 	createdBy: string;
-	institution: string;
+	organization: string;
 	templateFields: TemplateField[];
+	certificates: string[];
+	mailTemplate: MailTemplate;
 }
 
 export type TemplateField = {
@@ -95,7 +98,7 @@ const imageSchema = Joi.object().keys({
 const textSchema = Joi.object().keys({
 	id: Joi.string().required(),
 	name: Joi.string().required(),
-	type: Joi.string().valid("image", "text").required(),
+	type: Joi.string().valid("text").required(),
 	x: Joi.number().required(),
 	y: Joi.number().required(),
 	height: Joi.number().required(),
@@ -105,6 +108,7 @@ const textSchema = Joi.object().keys({
 	flipX: Joi.boolean().required(),
 	flipY: Joi.boolean().required(),
 	draggable: Joi.boolean().required(),
+	isConstant: Joi.boolean().required(),
 	text: Joi.string().required(),
 	fontSize: Joi.number().required(),
 	fontFamily: Joi.string().required(),
@@ -118,15 +122,17 @@ const textSchema = Joi.object().keys({
 	underline: Joi.boolean().required(),
 	italic: Joi.boolean().required(),
 	weight: Joi.number().required(),
+	fill: Joi.string().required(),
 });
 
+// TODO add itemSchema to canvas items
 const itemSchema = Joi.object().valid(imageSchema, textSchema);
 
 const canvasSchema = Joi.object().keys({
 	exportCanvasAs: Joi.string().valid("jpg", "png").required(),
 	height: Joi.number().required(),
 	width: Joi.number().required(),
-	items: Joi.array().items(itemSchema).required(),
+	items: Joi.array().items(Joi.any()).required(),
 });
 
 export const templateSchema = Joi.object().keys({
@@ -137,8 +143,27 @@ export const templateSchema = Joi.object().keys({
 	updatedAt: Joi.date().required(),
 	uid: Joi.string().required(),
 	canvas: canvasSchema,
+	certificates: Joi.array().items(Joi.string()).required(),
 	numberOfCertificates: Joi.number().required(),
 	imageRef: Joi.string().required(),
+	groups: Joi.array().items(Joi.string()).required(),
+	mailTemplate: Joi.object().keys({
+		from: Joi.string().required(),
+		to: Joi.string().required(),
+		subject: Joi.string().required(),
+		cc: Joi.string().required(),
+		message: Joi.string().required(),
+		fields: Joi.array().items(Joi.string()).required(),
+	}),
+	createdBy: Joi.string().required(),
+	organization: Joi.string().required(),
+	templateFields: Joi.array().items(
+		Joi.object().keys({
+			name: Joi.string().required(),
+			type: Joi.string().valid("text", "image").required(),
+			value: Joi.string().optional(),
+		})
+	),
 });
 
 export class Template implements ITemplate {
@@ -151,13 +176,13 @@ export class Template implements ITemplate {
 	canvas: Canvas;
 	numberOfCertificates: number;
 	imageRef: string;
-	group: string;
+	groups: string[];
 	createdBy: string;
-	institution: string;
+	organization: string;
 	templateFields: TemplateField[];
-
+	certificates: string[];
+	mailTemplate: MailTemplate;
 	constructor(template: ITemplate) {
-		this.id = template.id;
 		this.name = template.name;
 		this.description = template.description;
 		this.createdAt = template.createdAt;
@@ -166,18 +191,24 @@ export class Template implements ITemplate {
 		this.canvas = template.canvas;
 		this.numberOfCertificates = template.numberOfCertificates;
 		this.imageRef = template.imageRef;
-		this.group = template.group;
+		this.groups = template.groups;
 		this.createdBy = template.createdBy;
-		this.institution = template.institution;
+		this.organization = template.organization;
 		this.templateFields = template.templateFields;
+		this.certificates = template.certificates;
+		this.mailTemplate = template.mailTemplate;
 	}
 
 	validate(): { error: boolean; message: string } {
 		const { error } = templateSchema.validate(this);
 		if (error) {
+			let message = "";
+			error.details.forEach((detail) => {
+				message += `${detail.message} ...`;
+			});
 			return {
 				error: true,
-				message: error.details[0].message,
+				message,
 			};
 		} else {
 			return {
@@ -191,9 +222,38 @@ export class Template implements ITemplate {
 		dbCreateTemplate: (template: ITemplate) => Promise<ITemplate>
 	): Promise<ITemplate> {
 		return new Promise((resolve, reject) => {
-			dbCreateTemplate(this)
+			dbCreateTemplate({ ...this })
 				.then((template) => {
 					resolve(template);
+				})
+				.catch((err) => {
+					reject(err);
+				});
+		});
+	}
+
+	static getOne(
+		templateId: string,
+		dbGetOneTemplate: (templateId: string) => Promise<ITemplate>
+	): Promise<ITemplate> {
+		return new Promise((resolve, reject) => {
+			dbGetOneTemplate(templateId)
+				.then((template) => {
+					resolve(template);
+				})
+				.catch((err) => {
+					reject(err);
+				});
+		});
+	}
+	static getByOrganization(
+		organizationId: string,
+		dbGetByOrganization: (organizationId: string) => Promise<ITemplate[]>
+	): Promise<ITemplate[]> {
+		return new Promise((resolve, reject) => {
+			dbGetByOrganization(organizationId)
+				.then((templates) => {
+					resolve(templates);
 				})
 				.catch((err) => {
 					reject(err);
@@ -202,10 +262,10 @@ export class Template implements ITemplate {
 	}
 
 	update(
-		dbUpdateTemplate: (template: ITemplate) => Promise<ITemplate>
+		dbUpdate: (template: ITemplate) => Promise<ITemplate>
 	): Promise<ITemplate> {
 		return new Promise((resolve, reject) => {
-			dbUpdateTemplate(this)
+			dbUpdate({ ...this })
 				.then((template) => {
 					resolve(template);
 				})
@@ -215,11 +275,12 @@ export class Template implements ITemplate {
 		});
 	}
 
-	delete(
-		dbDeleteTemplate: (template: ITemplate) => Promise<ITemplate>
+	static delete(
+		templateId: string,
+		dbDelete: (templateId: string) => Promise<void>
 	): Promise<void> {
 		return new Promise((resolve, reject) => {
-			dbDeleteTemplate(this)
+			dbDelete(templateId)
 				.then(() => {
 					resolve();
 				})
@@ -231,12 +292,12 @@ export class Template implements ITemplate {
 
 	rename(
 		name: string,
-		dbUpdateTemplate: (template: ITemplate) => Promise<ITemplate>
+		dbUpdate: (template: ITemplate) => Promise<ITemplate>
 	): Promise<ITemplate> {
 		const data = { ...this };
 		data.name = name;
 		return new Promise((resolve, reject) => {
-			dbUpdateTemplate(data)
+			dbUpdate(data)
 				.then((template) => {
 					resolve(template);
 				})
@@ -246,9 +307,57 @@ export class Template implements ITemplate {
 		});
 	}
 
-	// generateImage
+	replaceFieldsWithValues(fields: TemplateField[]): ITemplate {
+		const data = { ...this };
+		data.templateFields = fields;
+		return data;
+	}
+
+	getTemplateImageWithValues(
+		fields: TemplateField[],
+		getImageFromTemplate: (
+			template: ITemplate,
+			fields: TemplateField[]
+		) => Promise<Buffer>
+	): Promise<Buffer> {
+		return new Promise((resolve, reject) => {
+			getImageFromTemplate({ ...this }, fields)
+				.then((image) => {
+					resolve(image);
+				})
+				.catch((err) => {
+					reject(err);
+				});
+		});
+	}
+
+	getAllFields(): TemplateField[] {
+		const result: TemplateField[] = [];
+		for (let i = 0; i < this.canvas.items.length; i++) {
+			const item = this.canvas.items[i];
+			if (item.type === "text") {
+				const fields = getFieldsFromString(item.text);
+				for (let j = 0; j < fields.length; j++) {
+					const field = fields[j];
+					if (!result.find((x) => x.name === field))
+						result.push({ name: field, type: "text", value: "" });
+				}
+			}
+		}
+		return result;
+	}
 }
 
 export const isTemplate = (x: any) => {
 	return true;
+};
+
+const getFieldsFromString = (string: string): string[] => {
+	const results = [];
+	const re = /{{([^}]+)}}/g;
+	let text;
+	while ((text = re.exec(string))) {
+		results.push(text[1]);
+	}
+	return results;
 };

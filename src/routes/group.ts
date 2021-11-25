@@ -2,13 +2,13 @@ import express from "express";
 import * as controllers from "../controllers/group";
 const router = express.Router();
 
-router.get("/:id", controllers.getGroup);
-router.get("/all/:instituteId", controllers.getGroups);
+router.get("/:group", controllers.getOne);
+router.get("/organization/:organization", controllers.getByOrganization);
 
-router.post("/", controllers.createGroup);
+router.post("/", controllers.create);
 
-router.put("/", controllers.updateGroup);
+router.put("/", controllers.update);
 
-router.delete("/:id");
+router.delete("/:group", controllers.deleteGroup);
 
 export default router;

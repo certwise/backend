@@ -6,7 +6,7 @@ import certificateRoute from "./routes/certificate";
 import paymentRoutes from "./routes/payment";
 import userRoutes from "./routes/user";
 import recipientRoutes from "./routes/recipient";
-import institutionRoutes from "./routes/institution";
+import organizationRoutes from "./routes/organization";
 import groupRoutes from "./routes/group";
 const app = express();
 import dotenv from "dotenv";
@@ -33,7 +33,7 @@ app.use("/certificate", certificateRoute);
 app.use("/payment", paymentRoutes);
 app.use("/recipient", recipientRoutes);
 app.use("/user", userRoutes);
-app.use("/institution", institutionRoutes);
+app.use("/organization", organizationRoutes);
 app.use("/group", groupRoutes);
 
 app.get("/", (req, res) => {

@@ -5,11 +5,7 @@ import env from "../../config";
 import konva from "konva/cmj";
 import canvas from "canvas";
 import axios from "axios";
-import {
-	TemplateField as Field,
-	ITemplate,
-	Text as text,
-} from "../../models/template";
+import { TemplateField, ITemplate, Text as text } from "../../models/template";
 import { Image as image } from "../../models/template";
 import { Image } from "konva/cmj/shapes/Image";
 import { Text } from "konva/cmj/shapes/Text";
@@ -57,7 +53,11 @@ export const getLoadedImage = (item: image): Promise<Image> => {
 /***
  * pass in textItem and get the konva Text object that can be added to a layer
  */
-export const getLoadedText = (item: text, textValue: string): Promise<Text> => {
+export const getLoadedText = (
+	item: text,
+	fields: TemplateField[]
+): Promise<Text> => {
+	const textValue = replaceFieldsWithValue(item.text, fields);
 	return new Promise((resolve) => {
 		console.log(`getLoadedText()`);
 		const text = new konva.Text({
@@ -104,7 +104,7 @@ export const getAllFontsFromTemplate = (
 				if (fs.existsSync(`${pathDir}/${fontFamily.replace(/ /g, "-")}.ttf`)) {
 					console.log(`${fontFamily} already exists`);
 					promises.push(
-						getExistingFont(
+						getExistingFonts(
 							`${pathDir}/${fontFamily.replace(/ /g, "-")}.ttf`,
 							fontFamily
 						)
@@ -112,7 +112,7 @@ export const getAllFontsFromTemplate = (
 				} else {
 					//fs.mkdirSync(pathDir, { recursive: true })
 					console.log("Pushing to promises");
-					const promise: Promise<fontPath> = downloadFile(
+					const promise: Promise<fontPath> = downloadFontFile(
 						fileLink,
 						`${pathDir}/${fontFamily.replace(/ /g, "-")}.ttf`,
 						fontFamily
@@ -126,13 +126,14 @@ export const getAllFontsFromTemplate = (
 	console.log(`Promises: ${promises}`);
 	return Promise.all(promises);
 };
-const getExistingFont = (path: string, family: string): Promise<fontPath> => {
+const getExistingFonts = (path: string, family: string): Promise<fontPath> => {
 	return new Promise((resolve) => resolve({ path: path, family: family }));
 };
+
 /***
  * returns a promise that returns value with { path: outputLocationPath, family:family }
  */
-const downloadFile = (
+const downloadFontFile = (
 	fileUrl: string,
 	outputLocationPath: string,
 	family: string
@@ -156,7 +157,7 @@ const downloadFile = (
 				writer.on("close", () => {
 					if (!error) {
 						resolve({ path: outputLocationPath, family: family });
-						console.log("Resolved font object from downloadFile");
+						console.log("Resolved font object from downloadFontFile");
 					}
 				});
 			})
@@ -167,14 +168,16 @@ const downloadFile = (
 	});
 };
 
-export const getTemplateImage = (templateId: string, fields: Field[]) => {
+export const getTemplateImage = (
+	templateId: string,
+	fields: TemplateField[]
+): Promise<Buffer> => {
 	return new Promise((resolve, reject) => {
 		let template: ITemplate;
 		const pathDir = `./storage/fonts/`;
 		getTemplate(templateId)
 			.then((temp) => {
 				template = temp.data() as ITemplate;
-				console.log(Object.keys(template));
 				return getAllFontsFromTemplate(template, pathDir);
 			})
 			.then((fontsObj) => {
@@ -186,14 +189,7 @@ export const getTemplateImage = (templateId: string, fields: Field[]) => {
 				template.canvas.items.map((item) => {
 					console.log(item.type);
 					if (item.type === "text") {
-						if (item.isConstant) promises.push(getLoadedText(item, item.text));
-						else
-							promises.push(
-								getLoadedText(
-									item,
-									fields.find((i) => i.name === item.name)?.value as string
-								)
-							);
+						promises.push(getLoadedText(item, fields));
 					}
 					if (item.type === "image") {
 						promises.push(getLoadedImage(item));
@@ -232,9 +228,6 @@ export const getTemplateImage = (templateId: string, fields: Field[]) => {
 				const buffer = Buffer.from(data, "base64");
 				console.log(`pathDir: ${pathDir}`);
 				resolve(buffer);
-			})
-			.then(() => {
-				console.log("fonts folder deleted");
 			})
 			.catch((err) => {
 				console.log(err);
@@ -278,26 +271,23 @@ export const makeid = (length: number) => {
 	return result;
 };
 
-export const getTemplateFields2 = (templateId: string): Promise<string[]> => {
-	console.log("getTemplateFields()");
-	return new Promise((resolve, reject) => {
-		getTemplate(templateId)
-			.then((template) => {
-				console.log(template.data());
-				const data: ITemplate = template.data() as ITemplate;
-				console.log("Data:", Object.keys(data));
-				const fields: string[] = [];
-				data.canvas.items.forEach((item) => {
-					if (item.type === "text") {
-						if (!item.isConstant) fields.push(item.name);
-					}
-				});
-				console.log(fields);
-				resolve(fields);
-			})
-			.catch((err) => {
-				reject(err);
-				console.log(err);
-			});
+export const getFieldsFromString = (string: string): string[] => {
+	const results = [];
+	const re = /{{([^}]+)}}/g;
+	let text;
+	while ((text = re.exec(string))) {
+		results.push(text[1]);
+	}
+	return results;
+};
+
+export const replaceFieldsWithValue = (
+	string: string,
+	fields: TemplateField[]
+): string => {
+	let result = string;
+	fields.forEach((field) => {
+		if (field.value) result = result.replace(`{{ ${field} }}`, field.value);
 	});
+	return result;
 };

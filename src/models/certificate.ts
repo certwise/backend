@@ -1,9 +1,10 @@
 import Joi from "joi";
-import { TemplateField } from "./template";
+import { Template, TemplateField, templateSchema } from "./template";
 
 export type ICertificate = {
 	id?: string;
-	issuerId: string;
+	issuer: string;
+	organization: string;
 	isIssued: boolean;
 	templateId: string;
 	createdAt: Date;
@@ -12,19 +13,18 @@ export type ICertificate = {
 	recipient: string;
 	fields: Array<TemplateField>;
 	group: string | false;
-	validTill: Date | true | undefined;
-	storageRef: string;
+	validTill: Date | false;
+	storageRef?: string;
 	isRevoked: boolean;
 };
 
 export type Field = {
 	name: string;
-	value: string;
 };
 
 export const certificateSchema = Joi.object().keys({
 	id: Joi.string().optional(),
-	issuerId: Joi.string().required(),
+	issuer: Joi.string().required(),
 	isIssued: Joi.boolean().required().default(false),
 	templateId: Joi.string().required(),
 	createdAt: Joi.date().required(),
@@ -41,15 +41,16 @@ export const certificateSchema = Joi.object().keys({
 			})
 		)
 		.required(),
-	group: Joi.string().required(),
-	validTill: Joi.date().required(),
-	storageRef: Joi.string().required(),
+	group: Joi.string().required().allow(false),
+	validTill: Joi.date().required().allow(false),
+	storageRef: Joi.string().optional(),
 	isRevoked: Joi.boolean().required().default(false),
+	organization: Joi.string().required(),
 });
 
 export class Certificate implements ICertificate {
 	id?: string;
-	issuerId: string;
+	issuer: string;
 	isIssued: boolean;
 	templateId: string;
 	createdAt: Date;
@@ -58,13 +59,11 @@ export class Certificate implements ICertificate {
 	recipient: string;
 	fields: Array<TemplateField>;
 	group: string | false;
-	validTill: Date | true | undefined;
-	storageRef: string;
+	validTill: Date | false;
 	isRevoked: boolean;
-
+	organization: string;
 	constructor(data: ICertificate) {
-		this.id = data.id;
-		this.issuerId = data.issuerId;
+		this.issuer = data.issuer;
 		this.isIssued = data.isIssued;
 		this.templateId = data.templateId;
 		this.createdAt = data.createdAt;
@@ -74,8 +73,8 @@ export class Certificate implements ICertificate {
 		this.fields = data.fields;
 		this.group = data.group;
 		this.validTill = data.validTill;
-		this.storageRef = data.storageRef;
 		this.isRevoked = data.isRevoked;
+		this.organization = data.organization;
 	}
 
 	validate(): { error: boolean; message: string } {
@@ -93,26 +92,36 @@ export class Certificate implements ICertificate {
 		}
 	}
 
-	create(
-		data: ICertificate,
-		dbCreateCertificate: (certificate: ICertificate) => Promise<ICertificate>
+	async create(
+		dbCreate: (certificate: ICertificate) => Promise<ICertificate>,
+		getTemplateImage: (
+			template: string,
+			fields: TemplateField[]
+		) => Promise<Buffer>,
+		uploadBufferToStorage: (
+			buffer: Buffer,
+			storageRef: string
+		) => Promise<string>
 	): Promise<ICertificate> {
-		return new Promise((resolve, reject) => {
-			dbCreateCertificate(data)
-				.then((certificate) => {
-					resolve(certificate);
-				})
-				.catch((err) => {
-					reject(err);
-				});
-		});
+		try {
+			const createdCert = await dbCreate({ ...this });
+			const templateImageBuffer = await getTemplateImage(
+				createdCert.templateId,
+				createdCert.fields
+			);
+			const storageRef = `${createdCert.organization}/certificates/${createdCert.id}.jpg`;
+			await uploadBufferToStorage(templateImageBuffer, storageRef);
+			return createdCert;
+		} catch (err: any) {
+			throw new Error(err.toString());
+		}
 	}
 
 	update(
-		dbUpdateCertificate: (certificate: ICertificate) => Promise<ICertificate>
+		dbUpdate: (certificate: ICertificate) => Promise<ICertificate>
 	): Promise<ICertificate | false> {
 		return new Promise((resolve, reject) => {
-			dbUpdateCertificate(this)
+			dbUpdate({ ...this })
 				.then((certificate) => {
 					resolve(certificate);
 				})
@@ -122,12 +131,11 @@ export class Certificate implements ICertificate {
 		});
 	}
 
-	delete(
-		dbDeleteCertificate: (certificateId: string) => Promise<void>
-	): Promise<void> {
+	delete(dbDelete: (certificateId: string) => Promise<void>): Promise<void> {
 		return new Promise((resolve, reject) => {
 			if (this.id) {
-				dbDeleteCertificate(this.id)
+				const id = this.id;
+				dbDelete(id)
 					.then(() => {
 						resolve();
 					})
@@ -140,11 +148,12 @@ export class Certificate implements ICertificate {
 		});
 	}
 
-	getOne(
-		dbGetOneCertificate: (certificate: ICertificate) => Promise<ICertificate>
-	): Promise<ICertificate | false> {
+	static getOne(
+		certificateId: string,
+		dbGetOne: (certificateId: string) => Promise<ICertificate>
+	): Promise<ICertificate> {
 		return new Promise((resolve, reject) => {
-			dbGetOneCertificate(this)
+			dbGetOne(certificateId)
 				.then((certificate) => {
 					resolve(certificate);
 				})
@@ -154,15 +163,14 @@ export class Certificate implements ICertificate {
 		});
 	}
 
-	getAll(
-		institutionId: string,
-		dbGetAllCertificates: (
-			certificate: ICertificate,
-			institutionId: string
+	static getByOrganizaion(
+		organizationId: string,
+		dbGetByOrganization: (
+			organizationId: string
 		) => Promise<Array<ICertificate>>
 	): Promise<Array<ICertificate>> {
 		return new Promise((resolve, reject) => {
-			dbGetAllCertificates(this, institutionId)
+			dbGetByOrganization(organizationId)
 				.then((certificates) => {
 					resolve(certificates);
 				})
@@ -172,14 +180,12 @@ export class Certificate implements ICertificate {
 		});
 	}
 
-	getAllByGroup(
+	static getByGroup(
 		groupId: string,
-		dbGetAllCertificatesByGroup: (
-			groupId: string
-		) => Promise<Array<ICertificate>>
+		dbGetByGroup: (groupId: string) => Promise<Array<ICertificate>>
 	): Promise<Array<ICertificate>> {
 		return new Promise((resolve, reject) => {
-			dbGetAllCertificatesByGroup(groupId)
+			dbGetByGroup(groupId)
 				.then((certificates) => {
 					resolve(certificates);
 				})
@@ -189,14 +195,12 @@ export class Certificate implements ICertificate {
 		});
 	}
 
-	getAllByTemplate(
+	static getByTemplate(
 		templateId: string,
-		dbGetAllCertificatesByTemplate: (
-			templateId: string
-		) => Promise<Array<ICertificate>>
+		dbGetByTemplate: (templateId: string) => Promise<Array<ICertificate>>
 	): Promise<Array<ICertificate>> {
 		return new Promise((resolve, reject) => {
-			dbGetAllCertificatesByTemplate(templateId)
+			dbGetByTemplate(templateId)
 				.then((certificates) => {
 					resolve(certificates);
 				})
@@ -206,14 +210,12 @@ export class Certificate implements ICertificate {
 		});
 	}
 
-	getAllByIssuer(
-		issuerId: string,
-		dbGetAllCertificatesByIssuer: (
-			issuerId: string
-		) => Promise<Array<ICertificate>>
+	static getByIssuer(
+		issuer: string,
+		dbGetCertificatesByIssuer: (issuer: string) => Promise<Array<ICertificate>>
 	): Promise<Array<ICertificate>> {
 		return new Promise((resolve, reject) => {
-			dbGetAllCertificatesByIssuer(issuerId)
+			dbGetCertificatesByIssuer(issuer)
 				.then((certificates) => {
 					resolve(certificates);
 				})
@@ -223,14 +225,14 @@ export class Certificate implements ICertificate {
 		});
 	}
 
-	getAllByRecipient(
+	static getByRecipient(
 		recipient: string,
-		dbGetAllCertificatesByRecipient: (
+		dbGetCertificatesByRecipient: (
 			recipient: string
 		) => Promise<Array<ICertificate>>
 	): Promise<Array<ICertificate>> {
 		return new Promise((resolve, reject) => {
-			dbGetAllCertificatesByRecipient(recipient)
+			dbGetCertificatesByRecipient(recipient)
 				.then((certificates) => {
 					resolve(certificates);
 				})
@@ -241,13 +243,11 @@ export class Certificate implements ICertificate {
 	}
 
 	getRevoked(
-		institutionId: string,
-		dbGetRevokedCertificates: (
-			institutionId: string
-		) => Promise<Array<ICertificate>>
+		organizationId: string,
+		dbGetRevoked: (organizationId: string) => Promise<Array<ICertificate>>
 	): Promise<Array<ICertificate>> {
 		return new Promise((resolve, reject) => {
-			dbGetRevokedCertificates(institutionId)
+			dbGetRevoked(organizationId)
 				.then((certificates) => {
 					resolve(certificates);
 				})
@@ -257,16 +257,37 @@ export class Certificate implements ICertificate {
 		});
 	}
 
-	revokeCertificate(
-		dbRevokeCertificate: (certificate: ICertificate) => Promise<ICertificate>
-	): Promise<ICertificate | false> {
+	revoke(
+		dbUpdate: (certificate: ICertificate) => Promise<ICertificate>
+	): Promise<ICertificate> {
 		const data = { ...this };
 		data.isRevoked = true;
 		data.lastUpdated = new Date();
 		return new Promise((resolve, reject) => {
-			dbRevokeCertificate(data)
+			dbUpdate(data)
 				.then((certificate) => {
 					resolve(certificate);
+				})
+				.catch((err) => {
+					reject(err);
+				});
+		});
+	}
+
+	issue(
+		dbUpdate: (certificate: ICertificate) => Promise<ICertificate>,
+		sendEmail: (recipient: string, templateId: string) => Promise<void>
+	): Promise<ICertificate> {
+		const data = { ...this };
+		data.isRevoked = false;
+		data.lastUpdated = new Date();
+		return new Promise((resolve, reject) => {
+			dbUpdate(data)
+				.then(() => {
+					return sendEmail(data.recipient, data.templateId);
+				})
+				.then(() => {
+					resolve(data);
 				})
 				.catch((err) => {
 					reject(err);

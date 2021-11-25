@@ -2,16 +2,13 @@ import express from "express";
 import * as controller from "../controllers/certificate";
 const router = express.Router();
 
-router.post("/one", controller.createSingleCertificate);
-router.post("/bulk", controller.bulkCreateCertificates);
+router.post("/one", controller.createOne);
 
-router.get("/one/:id", controller.getCertificate);
-router.get("/template/:templateId", controller.getCertificatesByTemplate);
-router.get("/owner/:uid", controller.getAllCertificatesByUID);
+router.get("/one/:id", controller.getOne);
+router.get("/template/:templateId", controller.getByTemplate);
+router.get("/organization/:organization", controller.getByOrganizaion);
 
-router.put("/one", controller.updateCertificate);
-router.put("/many", controller.bulkUpdateCertificates);
+router.put("/one", controller.update);
+router.put("/issue/one/:certificate", controller.issue);
 
-router.delete("/one/:id", controller.deleteCertificate);
-router.delete("/many", controller.bulkDeleteCertificates);
 export default router;
