@@ -32,7 +32,8 @@ var create = function (req, res) {
             res.status(200).send(group);
         })
             .catch(function (err) {
-            res.status(500).send(err);
+            console.log(err);
+            res.status(500).send(err.message);
         });
     }
     else {
@@ -47,7 +48,8 @@ var getOne = function (req, res) {
         res.status(200).send(group);
     })
         .catch(function (err) {
-        res.status(500).send(err);
+        console.log(err);
+        res.status(500).send(err.message);
     });
 };
 exports.getOne = getOne;
@@ -57,7 +59,8 @@ var getByOrganization = function (req, res) {
         res.status(200).send(groups);
     })
         .catch(function (err) {
-        res.status(500).send(err);
+        console.log(err);
+        res.status(500).send(err.message);
     });
 };
 exports.getByOrganization = getByOrganization;
@@ -71,7 +74,8 @@ var update = function (req, res) {
             res.status(200).send(group);
         })
             .catch(function (err) {
-            res.status(500).send(err);
+            console.log(err);
+            res.status(500).send(err.message);
         });
     }
     else {
@@ -85,7 +89,8 @@ var deleteGroup = function (req, res) {
         res.status(200).send(group);
     })
         .catch(function (err) {
-        res.status(500).send(err);
+        console.log(err);
+        res.status(500).send(err.message);
     });
 };
 exports.deleteGroup = deleteGroup;

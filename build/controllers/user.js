@@ -23,6 +23,7 @@ exports.deleteUser = exports.update = exports.get = exports.create = void 0;
 var user_1 = require("../models/user");
 var db = __importStar(require("../database/user"));
 var create = function (req, res) {
+    console.log("create user");
     var user = new user_1.User(req.body);
     var isValid = user.validate();
     if (!isValid.error) {
@@ -31,7 +32,7 @@ var create = function (req, res) {
             .then(function (user) { return res.status(201).send(user); })
             .catch(function (err) {
             console.log(err);
-            res.status(500).send(err);
+            res.status(500).send(err.message);
         });
     }
     else {
@@ -50,7 +51,7 @@ var get = function (req, res) {
             res.status(404).send("User not found");
         }
     })
-        .catch(function (err) { return res.status(500).send(err); });
+        .catch(function (err) { return res.status(500).send(err.message); });
 };
 exports.get = get;
 var update = function (req, res) {
@@ -60,7 +61,7 @@ var update = function (req, res) {
         user
             .update(db.update)
             .then(function () { return res.status(200).send(user); })
-            .catch(function (err) { return res.status(500).send(err); });
+            .catch(function (err) { return res.status(500).send(err.message); });
     }
     else {
         res.status(400).send(isValid.error);
@@ -68,6 +69,8 @@ var update = function (req, res) {
 };
 exports.update = update;
 var deleteUser = function (req, res) {
-    res.send("User test");
+    user_1.User.delete(req.params.uid, db.deleteUser)
+        .then(function () { return res.status(200).send("User deleted"); })
+        .catch(function (err) { return res.status(500).send(err.message); });
 };
 exports.deleteUser = deleteUser;

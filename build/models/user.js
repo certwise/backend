@@ -25,11 +25,11 @@ exports.UserSchema = joi_1.default.object().keys({
     createdAt: joi_1.default.date().required(),
     photoURL: joi_1.default.string().optional(),
     updatedAt: joi_1.default.date().required(),
-    numberOfTemplatesCreated: joi_1.default.number().required(),
-    numberOfCerificatesCreated: joi_1.default.number().required(),
 });
 var User = /** @class */ (function () {
     function User(user) {
+        if (user._id)
+            this._id = user._id;
         this.uid = user.uid;
         this.name = user.name;
         this.email = user.email;
@@ -37,8 +37,6 @@ var User = /** @class */ (function () {
         this.isVerified = user.isVerified;
         this.createdAt = user.createdAt;
         this.updatedAt = user.updatedAt;
-        this.numberOfTemplatesCreated = user.numberOfTemplatesCreated;
-        this.numberOfCerificatesCreated = user.numberOfCerificatesCreated;
     }
     User.prototype.validate = function () {
         var error = exports.UserSchema.validate(this).error;
@@ -85,6 +83,17 @@ var User = /** @class */ (function () {
             dbGet(uid)
                 .then(function (user) {
                 resolve(user);
+            })
+                .catch(function (error) {
+                reject(error);
+            });
+        });
+    };
+    User.delete = function (uid, dbDelete) {
+        return new Promise(function (resolve, reject) {
+            dbDelete(uid)
+                .then(function () {
+                resolve();
             })
                 .catch(function (error) {
                 reject(error);

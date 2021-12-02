@@ -46,95 +46,89 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
         if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
     }
 };
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.update = exports.getByGroup = exports.getByOrganization = exports.get = exports.create = void 0;
-var firestore_1 = require("firebase/firestore");
-var db = (0, firestore_1.getFirestore)();
-var recipientCollection = (0, firestore_1.collection)(db, "recipients");
+exports.update = exports.getByGroup = exports.getByOrganizaion = exports.get = exports.createBulk = exports.create = void 0;
+var _1 = __importDefault(require("."));
+var recipientCollection = _1.default.get("recipients");
 var create = function (recipient) { return __awaiter(void 0, void 0, void 0, function () {
-    var checkRecipientQuery, checkRecipient, ref, orgDoc, orgRes, org;
+    var check, result;
     return __generator(this, function (_a) {
         switch (_a.label) {
-            case 0:
-                checkRecipientQuery = (0, firestore_1.query)(recipientCollection, (0, firestore_1.where)("email", "==", recipient.email), (0, firestore_1.where)("organization", "==", recipient.organization));
-                return [4 /*yield*/, (0, firestore_1.getDocs)(checkRecipientQuery)];
+            case 0: return [4 /*yield*/, recipientCollection.find({ email: recipient.email })];
             case 1:
-                checkRecipient = _a.sent();
-                if (!!checkRecipient.empty) return [3 /*break*/, 2];
-                throw new Error("Recipient already exists in this organization.");
+                check = _a.sent();
+                if (!(check.length === 0)) return [3 /*break*/, 3];
+                return [4 /*yield*/, recipientCollection.insert(recipient)];
             case 2:
-                console.log(recipient);
-                return [4 /*yield*/, (0, firestore_1.addDoc)(recipientCollection, recipient)];
-            case 3:
-                ref = _a.sent();
-                console.log("Recipient2", recipient);
-                orgDoc = (0, firestore_1.doc)((0, firestore_1.collection)(db, "organizations"), recipient.organization);
-                return [4 /*yield*/, (0, firestore_1.getDoc)(orgDoc)];
-            case 4:
-                orgRes = _a.sent();
-                org = __assign({ id: orgRes.id }, orgRes.data());
-                if (org.recipients)
-                    org.recipients.push(ref.id);
-                else
-                    org.recipients = [ref.id];
-                console.log("Adding recipient to organization.");
-                return [4 /*yield*/, (0, firestore_1.setDoc)(orgDoc, org)];
-            case 5:
-                _a.sent();
-                return [2 /*return*/, __assign(__assign({}, recipient), { id: ref.id })];
+                result = _a.sent();
+                return [3 /*break*/, 4];
+            case 3: throw new Error("Recipient already exists");
+            case 4: return [2 /*return*/, result];
         }
     });
 }); };
 exports.create = create;
-var get = function (id) { return __awaiter(void 0, void 0, void 0, function () {
-    var ref, res;
+var createBulk = function (recipients) { return __awaiter(void 0, void 0, void 0, function () {
+    var result;
     return __generator(this, function (_a) {
         switch (_a.label) {
-            case 0:
-                ref = (0, firestore_1.doc)(recipientCollection, id);
-                return [4 /*yield*/, (0, firestore_1.getDoc)(ref)];
+            case 0: return [4 /*yield*/, recipientCollection.insert(recipients)];
             case 1:
-                res = _a.sent();
-                return [2 /*return*/, __assign({ id: res.id }, res.data())];
+                result = _a.sent();
+                return [2 /*return*/, result];
+        }
+    });
+}); };
+exports.createBulk = createBulk;
+var get = function (_id) { return __awaiter(void 0, void 0, void 0, function () {
+    var result;
+    return __generator(this, function (_a) {
+        switch (_a.label) {
+            case 0: return [4 /*yield*/, recipientCollection.findOne({ _id: _id })];
+            case 1:
+                result = _a.sent();
+                return [2 /*return*/, result];
         }
     });
 }); };
 exports.get = get;
-var getByOrganization = function (organization) { return __awaiter(void 0, void 0, void 0, function () {
-    var ref, res;
+var getByOrganizaion = function (organization) { return __awaiter(void 0, void 0, void 0, function () {
+    var result;
     return __generator(this, function (_a) {
         switch (_a.label) {
-            case 0:
-                ref = (0, firestore_1.query)(recipientCollection, (0, firestore_1.where)("organization", "==", organization));
-                return [4 /*yield*/, (0, firestore_1.getDocs)(ref)];
+            case 0: return [4 /*yield*/, recipientCollection.find({ organization: organization })];
             case 1:
-                res = _a.sent();
-                return [2 /*return*/, res.docs.map(function (doc) { return (__assign({ id: doc.id }, doc.data())); })];
+                result = _a.sent();
+                if (!result)
+                    throw new Error("No recipients in Organization");
+                return [2 /*return*/, result];
         }
     });
 }); };
-exports.getByOrganization = getByOrganization;
+exports.getByOrganizaion = getByOrganizaion;
 var getByGroup = function (group) { return __awaiter(void 0, void 0, void 0, function () {
-    var ref, res;
+    var result;
     return __generator(this, function (_a) {
         switch (_a.label) {
-            case 0:
-                ref = (0, firestore_1.query)(recipientCollection, (0, firestore_1.where)("groups", "array-contains", group));
-                return [4 /*yield*/, (0, firestore_1.getDocs)(ref)];
+            case 0: return [4 /*yield*/, recipientCollection.find({ groups: group })];
             case 1:
-                res = _a.sent();
-                return [2 /*return*/, res.docs.map(function (doc) { return (__assign({ id: doc.id }, doc.data())); })];
+                result = _a.sent();
+                if (!result)
+                    throw new Error("No recipients in Group");
+                return [2 /*return*/, result];
         }
     });
 }); };
 exports.getByGroup = getByGroup;
 var update = function (recipient) { return __awaiter(void 0, void 0, void 0, function () {
-    var ref;
     return __generator(this, function (_a) {
         switch (_a.label) {
             case 0:
-                ref = (0, firestore_1.doc)(recipientCollection, recipient.id);
-                return [4 /*yield*/, (0, firestore_1.setDoc)(ref, recipient)];
+                console.log(recipient);
+                return [4 /*yield*/, recipientCollection.update({ _id: recipient._id }, { $set: __assign({}, recipient) })];
             case 1:
                 _a.sent();
                 return [2 /*return*/, recipient];

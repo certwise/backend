@@ -26,7 +26,7 @@ var create = function (req, res) {
     var template = new template_1.Template(req.body);
     var isValid = template.validate();
     if (isValid.error) {
-        res.status(400).send("Template not valid. " + isValid.message);
+        res.status(400).send("Template not valid. ".concat(isValid.message));
     }
     else {
         template
@@ -35,7 +35,7 @@ var create = function (req, res) {
             res.status(201).send(template);
         })
             .catch(function (err) {
-            res.status(500).send(err);
+            res.status(500).send(err.message);
         });
     }
 };
@@ -47,7 +47,7 @@ var getById = function (req, res) {
         res.status(200).send(template);
     })
         .catch(function (err) {
-        res.status(500).send(err);
+        res.status(500).send(err.message);
     });
 };
 exports.getById = getById;
@@ -58,7 +58,7 @@ var getByOrganization = function (req, res) {
         res.status(200).send(templates);
     })
         .catch(function (err) {
-        res.status(500).send(err);
+        res.status(500).send(err.message);
     });
 };
 exports.getByOrganization = getByOrganization;
@@ -66,7 +66,7 @@ var update = function (req, res) {
     var template = new template_1.Template(req.body);
     var isValid = template.validate();
     if (isValid.error) {
-        res.status(400).send("Template not valid. " + isValid.message);
+        res.status(400).send("Template not valid. ".concat(isValid.message));
     }
     else {
         template
@@ -75,7 +75,7 @@ var update = function (req, res) {
             res.status(200).send(updatedTemplate);
         })
             .catch(function (err) {
-            res.status(500).send(err);
+            res.status(500).send(err.message);
         });
     }
 };
@@ -86,7 +86,7 @@ var deleteTemplate = function (req, res) {
         res.status(200).send();
     })
         .catch(function (err) {
-        res.status(500).send(err);
+        res.status(500).send(err.message);
     });
 };
 exports.deleteTemplate = deleteTemplate;
@@ -108,7 +108,7 @@ var getNumberOfCertificates = function (req, res) {
         res.status(200).send(numberOfCertificates);
     })
         .catch(function (err) {
-        res.status(500).send(err);
+        res.status(500).send(err.message);
     });
 };
 exports.getNumberOfCertificates = getNumberOfCertificates;

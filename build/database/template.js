@@ -46,94 +46,78 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
         if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
     }
 };
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.deleteTemplate = exports.update = exports.getByGroup = exports.getByOrganization = exports.getOne = exports.create = void 0;
-var firestore_1 = require("firebase/firestore");
-var db = (0, firestore_1.getFirestore)();
-var templateCollection = (0, firestore_1.collection)(db, "templates");
+exports.getArchivedByOrganization = exports.deleteTemplate = exports.update = exports.getByGroup = exports.getByOrganization = exports.getOne = exports.create = void 0;
+var _1 = __importDefault(require("."));
+var templateCollection = _1.default.get("templates");
 var create = function (template) { return __awaiter(void 0, void 0, void 0, function () {
-    var id;
+    var result;
     return __generator(this, function (_a) {
         switch (_a.label) {
-            case 0: return [4 /*yield*/, (0, firestore_1.addDoc)(templateCollection, template)];
+            case 0: return [4 /*yield*/, templateCollection.insert(template)];
             case 1:
-                id = (_a.sent()).id;
-                return [2 /*return*/, __assign({ id: id }, template)];
+                result = _a.sent();
+                return [2 /*return*/, result];
         }
     });
 }); };
 exports.create = create;
 var getOne = function (templateId) { return __awaiter(void 0, void 0, void 0, function () {
-    var tDoc, template;
+    var result;
     return __generator(this, function (_a) {
         switch (_a.label) {
-            case 0:
-                tDoc = (0, firestore_1.doc)(templateCollection, templateId);
-                return [4 /*yield*/, (0, firestore_1.getDoc)(tDoc)];
+            case 0: return [4 /*yield*/, templateCollection.findOne({ _id: templateId })];
             case 1:
-                template = _a.sent();
-                return [2 /*return*/, __assign({ id: template.id }, template.data())];
+                result = _a.sent();
+                return [2 /*return*/, result];
         }
     });
 }); };
 exports.getOne = getOne;
 var getByOrganization = function (organization) { return __awaiter(void 0, void 0, void 0, function () {
-    var tQuery, templates, res;
+    var result;
     return __generator(this, function (_a) {
         switch (_a.label) {
-            case 0:
-                tQuery = (0, firestore_1.query)(templateCollection, (0, firestore_1.where)("organization", "==", organization));
-                return [4 /*yield*/, (0, firestore_1.getDocs)(tQuery)];
+            case 0: return [4 /*yield*/, templateCollection.find({ organization: organization })];
             case 1:
-                templates = _a.sent();
-                res = [];
-                templates.forEach(function (t) {
-                    res.push(__assign({ id: t.id }, t.data()));
-                });
-                return [2 /*return*/, res];
+                result = _a.sent();
+                return [2 /*return*/, result];
         }
     });
 }); };
 exports.getByOrganization = getByOrganization;
 var getByGroup = function (group) { return __awaiter(void 0, void 0, void 0, function () {
-    var tQuery, templates, res;
+    var result;
     return __generator(this, function (_a) {
         switch (_a.label) {
-            case 0:
-                tQuery = (0, firestore_1.query)(templateCollection, (0, firestore_1.where)("groups", "array-contains", group));
-                return [4 /*yield*/, (0, firestore_1.getDocs)(tQuery)];
+            case 0: return [4 /*yield*/, templateCollection.find({ group: group })];
             case 1:
-                templates = _a.sent();
-                res = [];
-                templates.forEach(function (t) {
-                    res.push(__assign({ id: t.id }, t.data()));
-                });
-                return [2 /*return*/, res];
+                result = _a.sent();
+                return [2 /*return*/, result];
         }
     });
 }); };
 exports.getByGroup = getByGroup;
 var update = function (template) { return __awaiter(void 0, void 0, void 0, function () {
-    var tDoc;
     return __generator(this, function (_a) {
         switch (_a.label) {
             case 0:
-                tDoc = (0, firestore_1.doc)(templateCollection, template.id);
-                return [4 /*yield*/, (0, firestore_1.setDoc)(tDoc, template)];
+                console.log("Template id", template._id);
+                return [4 /*yield*/, templateCollection.findOneAndUpdate({ _id: template._id }, { $set: __assign({}, template) })];
             case 1:
                 _a.sent();
-                return [2 /*return*/, __assign({ id: template.id }, template)];
+                return [2 /*return*/, template];
         }
     });
 }); };
 exports.update = update;
 var deleteTemplate = function (id) { return __awaiter(void 0, void 0, void 0, function () {
-    var tDoc;
     return __generator(this, function (_a) {
         switch (_a.label) {
-            case 0:
-                tDoc = (0, firestore_1.doc)(templateCollection, id);
-                return [4 /*yield*/, (0, firestore_1.deleteDoc)(tDoc)];
+            case 0: return [4 /*yield*/, templateCollection.remove({ _id: id })];
             case 1:
                 _a.sent();
                 return [2 /*return*/];
@@ -141,3 +125,18 @@ var deleteTemplate = function (id) { return __awaiter(void 0, void 0, void 0, fu
     });
 }); };
 exports.deleteTemplate = deleteTemplate;
+var getArchivedByOrganization = function (organization) { return __awaiter(void 0, void 0, void 0, function () {
+    var result;
+    return __generator(this, function (_a) {
+        switch (_a.label) {
+            case 0: return [4 /*yield*/, templateCollection.find({
+                    organization: organization,
+                    archived: true,
+                })];
+            case 1:
+                result = _a.sent();
+                return [2 /*return*/, result];
+        }
+    });
+}); };
+exports.getArchivedByOrganization = getArchivedByOrganization;

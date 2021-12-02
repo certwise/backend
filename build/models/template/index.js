@@ -71,24 +71,20 @@ var canvasSchema = joi_1.default.object().keys({
     items: joi_1.default.array().items(joi_1.default.any()).required(),
 });
 exports.templateSchema = joi_1.default.object().keys({
-    id: joi_1.default.string().optional(),
+    _id: joi_1.default.string().optional(),
     name: joi_1.default.string().required(),
     description: joi_1.default.string().required(),
     createdAt: joi_1.default.date().required(),
     updatedAt: joi_1.default.date().required(),
-    uid: joi_1.default.string().required(),
     canvas: canvasSchema,
-    certificates: joi_1.default.array().items(joi_1.default.string()).required(),
     numberOfCertificates: joi_1.default.number().required(),
-    imageRef: joi_1.default.string().required(),
-    groups: joi_1.default.array().items(joi_1.default.string()).required(),
+    imageRef: joi_1.default.string().required().allow(""),
     mailTemplate: joi_1.default.object().keys({
-        from: joi_1.default.string().required(),
-        to: joi_1.default.string().required(),
-        subject: joi_1.default.string().required(),
-        cc: joi_1.default.string().required(),
-        message: joi_1.default.string().required(),
-        fields: joi_1.default.array().items(joi_1.default.string()).required(),
+        from: joi_1.default.string().required().allow(""),
+        to: joi_1.default.string().required().allow(""),
+        subject: joi_1.default.string().required().allow(""),
+        cc: joi_1.default.string().required().allow(""),
+        message: joi_1.default.string().required().allow(""),
     }),
     createdBy: joi_1.default.string().required(),
     organization: joi_1.default.string().required(),
@@ -97,22 +93,23 @@ exports.templateSchema = joi_1.default.object().keys({
         type: joi_1.default.string().valid("text", "image").required(),
         value: joi_1.default.string().optional(),
     })),
+    isArchived: joi_1.default.boolean().required(),
 });
 var Template = /** @class */ (function () {
     function Template(template) {
+        if (template._id)
+            this._id = template._id;
         this.name = template.name;
         this.description = template.description;
         this.createdAt = template.createdAt;
         this.updatedAt = template.updatedAt;
-        this.uid = template.uid;
         this.canvas = template.canvas;
         this.numberOfCertificates = template.numberOfCertificates;
         this.imageRef = template.imageRef;
-        this.groups = template.groups;
         this.createdBy = template.createdBy;
         this.organization = template.organization;
         this.templateFields = template.templateFields;
-        this.certificates = template.certificates;
+        this.isArchived = template.isArchived;
         this.mailTemplate = template.mailTemplate;
     }
     Template.prototype.validate = function () {
@@ -120,7 +117,7 @@ var Template = /** @class */ (function () {
         if (error) {
             var message_1 = "";
             error.details.forEach(function (detail) {
-                message_1 += detail.message + " ...";
+                message_1 += "".concat(detail.message, " ...");
             });
             return {
                 error: true,

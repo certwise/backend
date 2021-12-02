@@ -46,46 +46,54 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
         if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
     }
 };
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.deleteUser = exports.update = exports.get = exports.create = void 0;
-var firestore_1 = require("firebase/firestore");
-var db = (0, firestore_1.getFirestore)();
-var usersCollection = (0, firestore_1.collection)(db, "users");
+var _1 = __importDefault(require("."));
+var userCollection = _1.default.get("users");
+userCollection.options = {
+    castIds: false,
+};
 var create = function (user) { return __awaiter(void 0, void 0, void 0, function () {
-    var userDoc;
+    var req, newUser;
     return __generator(this, function (_a) {
         switch (_a.label) {
             case 0:
-                userDoc = (0, firestore_1.doc)(usersCollection, user.uid);
-                return [4 /*yield*/, (0, firestore_1.setDoc)(userDoc, user)];
+                req = __assign({ _id: user.uid.toString() }, user);
+                return [4 /*yield*/, userCollection.insert(req, {
+                        castIds: false,
+                    })];
             case 1:
-                _a.sent();
-                return [2 /*return*/, user];
+                newUser = _a.sent();
+                return [2 /*return*/, newUser];
         }
     });
 }); };
 exports.create = create;
-var get = function (id) { return __awaiter(void 0, void 0, void 0, function () {
-    var userRef, user;
+var get = function (uid) { return __awaiter(void 0, void 0, void 0, function () {
+    var user;
     return __generator(this, function (_a) {
         switch (_a.label) {
-            case 0:
-                userRef = (0, firestore_1.doc)(usersCollection, id);
-                return [4 /*yield*/, (0, firestore_1.getDoc)(userRef)];
+            case 0: return [4 /*yield*/, userCollection.findOne({ _id: uid })];
             case 1:
                 user = _a.sent();
-                return [2 /*return*/, __assign({ uid: user.id }, user.data())];
+                if (!user)
+                    throw new Error("User not found");
+                else
+                    return [2 /*return*/, user];
+                return [2 /*return*/];
         }
     });
 }); };
 exports.get = get;
 var update = function (user) { return __awaiter(void 0, void 0, void 0, function () {
-    var userRef;
     return __generator(this, function (_a) {
         switch (_a.label) {
             case 0:
-                userRef = (0, firestore_1.doc)(usersCollection, user.uid);
-                return [4 /*yield*/, (0, firestore_1.setDoc)(userRef, user)];
+                console.log("User:", user);
+                return [4 /*yield*/, userCollection.update({ _id: user.uid }, { $set: __assign({}, user) })];
             case 1:
                 _a.sent();
                 return [2 /*return*/, user];
@@ -93,13 +101,10 @@ var update = function (user) { return __awaiter(void 0, void 0, void 0, function
     });
 }); };
 exports.update = update;
-var deleteUser = function (id) { return __awaiter(void 0, void 0, void 0, function () {
-    var userRef;
+var deleteUser = function (uid) { return __awaiter(void 0, void 0, void 0, function () {
     return __generator(this, function (_a) {
         switch (_a.label) {
-            case 0:
-                userRef = (0, firestore_1.doc)(usersCollection, id);
-                return [4 /*yield*/, (0, firestore_1.deleteDoc)(userRef)];
+            case 0: return [4 /*yield*/, userCollection.remove({ _id: uid })];
             case 1:
                 _a.sent();
                 return [2 /*return*/];

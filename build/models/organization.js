@@ -14,48 +14,43 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.Organization = exports.organizationSchema = void 0;
+exports.Organization = exports.organizationSchema = exports.customFieldSchema = void 0;
 var joi_1 = __importDefault(require("joi"));
+var metaDataSchema = joi_1.default.object().keys({
+    city: joi_1.default.string().optional().allow(""),
+    country: joi_1.default.string().optional().allow(""),
+    address: joi_1.default.string().optional().allow(""),
+    phone: joi_1.default.string().optional().allow(""),
+    website: joi_1.default.string().optional().allow(""),
+    logo: joi_1.default.string().optional().allow(""),
+    description: joi_1.default.string().optional().allow(""),
+    picture: joi_1.default.string().optional().allow(""),
+    postalCode: joi_1.default.string().optional().allow(""),
+    state: joi_1.default.string().optional().allow(""),
+});
+exports.customFieldSchema = joi_1.default.object().keys({
+    name: joi_1.default.string().required(),
+    type: joi_1.default.string().optional(),
+    value: joi_1.default.string().optional(),
+});
 exports.organizationSchema = joi_1.default.object().keys({
-    id: joi_1.default.string().optional().allow(""),
+    _id: joi_1.default.string().optional().allow(""),
     name: joi_1.default.string().required(),
     createdBy: joi_1.default.string().required(),
     createdAt: joi_1.default.date().required(),
-    recipients: joi_1.default.array().items(joi_1.default.string()).required(),
-    subscriptions: joi_1.default.array().items(joi_1.default.string()).required(),
-    activeSubscription: joi_1.default.string().required(),
-    templates: joi_1.default.array().items(joi_1.default.string()).required(),
-    certificates: joi_1.default.array().items(joi_1.default.string()).required(),
-    admins: joi_1.default.array().items(joi_1.default.string()).required(),
-    customFields: joi_1.default.array().items(joi_1.default.string()).required(),
-    groups: joi_1.default.array().items(joi_1.default.string()).required(),
+    customFields: joi_1.default.array().items(exports.customFieldSchema).required(),
     lastUpdated: joi_1.default.date().required(),
-    metaData: joi_1.default.object()
-        .keys({
-        city: joi_1.default.string().optional(),
-        country: joi_1.default.string().optional,
-        address: joi_1.default.string().optional,
-        phone: joi_1.default.string().optional,
-        email: joi_1.default.string().optional,
-        website: joi_1.default.string().optional,
-        logo: joi_1.default.string().optional,
-        description: joi_1.default.string().optional,
-        picture: joi_1.default.string().optional,
-    })
-        .optional(),
+    email: joi_1.default.string().email().required(),
+    metaData: metaDataSchema.optional(),
 });
 var Organization = /** @class */ (function () {
     function Organization(organization) {
+        if (organization._id)
+            this._id = organization._id;
         this.name = organization.name;
         this.createdBy = organization.createdBy;
         this.createdAt = organization.createdAt;
-        this.recipients = organization.recipients;
-        this.subscriptions = organization.subscriptions;
-        this.activeSubscription = organization.activeSubscription;
-        this.templates = organization.templates;
-        this.certificates = organization.certificates;
         this.customFields = organization.customFields;
-        this.groups = organization.groups;
         this.lastUpdated = new Date();
         this.email = organization.email;
         if (organization.metaData)

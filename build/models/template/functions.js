@@ -1,64 +1,24 @@
 "use strict";
-var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
-var __generator = (this && this.__generator) || function (thisArg, body) {
-    var _ = { label: 0, sent: function() { if (t[0] & 1) throw t[1]; return t[1]; }, trys: [], ops: [] }, f, y, t, g;
-    return g = { next: verb(0), "throw": verb(1), "return": verb(2) }, typeof Symbol === "function" && (g[Symbol.iterator] = function() { return this; }), g;
-    function verb(n) { return function (v) { return step([n, v]); }; }
-    function step(op) {
-        if (f) throw new TypeError("Generator is already executing.");
-        while (_) try {
-            if (f = 1, y && (t = op[0] & 2 ? y["return"] : op[0] ? y["throw"] || ((t = y["return"]) && t.call(y), 0) : y.next) && !(t = t.call(y, op[1])).done) return t;
-            if (y = 0, t) op = [op[0] & 2, t.value];
-            switch (op[0]) {
-                case 0: case 1: t = op; break;
-                case 4: _.label++; return { value: op[1], done: false };
-                case 5: _.label++; y = op[1]; op = [0]; continue;
-                case 7: op = _.ops.pop(); _.trys.pop(); continue;
-                default:
-                    if (!(t = _.trys, t = t.length > 0 && t[t.length - 1]) && (op[0] === 6 || op[0] === 2)) { _ = 0; continue; }
-                    if (op[0] === 3 && (!t || (op[1] > t[0] && op[1] < t[3]))) { _.label = op[1]; break; }
-                    if (op[0] === 6 && _.label < t[1]) { _.label = t[1]; t = op; break; }
-                    if (t && _.label < t[2]) { _.label = t[2]; _.ops.push(op); break; }
-                    if (t[2]) _.ops.pop();
-                    _.trys.pop(); continue;
-            }
-            op = body.call(thisArg, _);
-        } catch (e) { op = [6, e]; y = 0; } finally { f = t = 0; }
-        if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
-    }
-};
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.replaceFieldsWithValue = exports.getFieldsFromString = exports.makeid = exports.getTemplateFields = exports.getTemplateImage = exports.getAllFontsFromTemplate = exports.getLoadedText = exports.getLoadedImage = void 0;
-var firestore_1 = require("firebase/firestore");
 var storage_1 = require("firebase/storage");
 var fs_1 = __importDefault(require("fs"));
-var config_1 = __importDefault(require("../../config"));
 var cmj_1 = __importDefault(require("konva/cmj"));
 var canvas_1 = __importDefault(require("canvas"));
 var axios_1 = __importDefault(require("axios"));
+var template_1 = require("../../database/template");
 /***
  * Get template object from firestore with given **templateId**
  */
-var getTemplate = function (templateId) { return __awaiter(void 0, void 0, void 0, function () {
-    var db, template;
-    return __generator(this, function (_a) {
-        db = (0, firestore_1.getFirestore)(config_1.default.firebaseApp);
-        template = (0, firestore_1.doc)(db, "templates", templateId);
-        console.log("Getting template " + templateId);
-        return [2 /*return*/, (0, firestore_1.getDoc)(template)];
-    });
-}); };
+// const getTemplate = async (templateId: string) => {
+// 	const db = getFirestore(env.firebaseApp);
+// 	const template = doc(db, "templates", templateId);
+// 	console.log(`Getting template ${templateId}`);
+// 	return getDoc(template);
+// };
 /***
  * pass in imageItem and get the konva Image object that can be added to a layer
  */
@@ -95,6 +55,7 @@ exports.getLoadedImage = getLoadedImage;
  */
 var getLoadedText = function (item, fields) {
     var textValue = (0, exports.replaceFieldsWithValue)(item.text, fields);
+    console.log("Text value is ".concat(textValue, ", ").concat(fields));
     return new Promise(function (resolve) {
         console.log("getLoadedText()");
         var text = new cmj_1.default.Text({
@@ -131,21 +92,21 @@ var getAllFontsFromTemplate = function (template, pathDir) {
             if (item.fontFileLink) {
                 var fileLink = item.fontFileLink;
                 var fontFamily = item.fontFamily;
-                if (fs_1.default.existsSync(pathDir + "/" + fontFamily.replace(/ /g, "-") + ".ttf")) {
-                    console.log(fontFamily + " already exists");
-                    promises.push(getExistingFonts(pathDir + "/" + fontFamily.replace(/ /g, "-") + ".ttf", fontFamily));
+                if (fs_1.default.existsSync("".concat(pathDir, "/").concat(fontFamily.replace(/ /g, "-"), ".ttf"))) {
+                    console.log("".concat(fontFamily, " already exists"));
+                    promises.push(getExistingFonts("".concat(pathDir, "/").concat(fontFamily.replace(/ /g, "-"), ".ttf"), fontFamily));
                 }
                 else {
                     //fs.mkdirSync(pathDir, { recursive: true })
                     console.log("Pushing to promises");
-                    var promise = downloadFontFile(fileLink, pathDir + "/" + fontFamily.replace(/ /g, "-") + ".ttf", fontFamily);
+                    var promise = downloadFontFile(fileLink, "".concat(pathDir, "/").concat(fontFamily.replace(/ /g, "-"), ".ttf"), fontFamily);
                     promises.push(promise);
                     console.log("Pushed to promises");
                 }
             }
         }
     }
-    console.log("Promises: " + promises);
+    console.log("Promises: ".concat(promises));
     return Promise.all(promises);
 };
 exports.getAllFontsFromTemplate = getAllFontsFromTemplate;
@@ -156,7 +117,7 @@ var getExistingFonts = function (path, family) {
  * returns a promise that returns value with { path: outputLocationPath, family:family }
  */
 var downloadFontFile = function (fileUrl, outputLocationPath, family) {
-    console.log("Downloading " + fileUrl + " to " + outputLocationPath);
+    console.log("Downloading ".concat(fileUrl, " to ").concat(outputLocationPath));
     return new Promise(function (resolve, reject) {
         var writer = fs_1.default.createWriteStream(outputLocationPath);
         (0, axios_1.default)({
@@ -188,15 +149,16 @@ var downloadFontFile = function (fileUrl, outputLocationPath, family) {
 var getTemplateImage = function (templateId, fields) {
     return new Promise(function (resolve, reject) {
         var template;
-        var pathDir = "./storage/fonts/";
-        getTemplate(templateId)
-            .then(function (temp) {
-            template = temp.data();
+        var pathDir = "./storage/fonts";
+        (0, template_1.getOne)(templateId)
+            .then(function (templateRes) {
+            template = templateRes;
             return (0, exports.getAllFontsFromTemplate)(template, pathDir);
         })
             .then(function (fontsObj) {
             console.log("fonts loaded to storage");
             fontsObj.forEach(function (obj) {
+                console.log(obj);
                 canvas_1.default.registerFont(obj.path, { family: obj.family });
             });
             var promises = [];
@@ -240,7 +202,7 @@ var getTemplateImage = function (templateId, fields) {
             var data = img.replace(/^data:image\/\w+;base64,/, "");
             // eslint-disable-next-line no-undef
             var buffer = Buffer.from(data, "base64");
-            console.log("pathDir: " + pathDir);
+            console.log("pathDir: ".concat(pathDir));
             resolve(buffer);
         })
             .catch(function (err) {
@@ -253,10 +215,8 @@ exports.getTemplateImage = getTemplateImage;
 var getTemplateFields = function (templateId) {
     console.log("getTemplateFields()");
     return new Promise(function (resolve, reject) {
-        getTemplate(templateId)
-            .then(function (template) {
-            console.log(template.data());
-            var data = template.data();
+        (0, template_1.getOne)(templateId)
+            .then(function (data) {
             console.log("Data:", Object.keys(data));
             var fields = [];
             data.canvas.items.forEach(function (item) {
@@ -298,8 +258,9 @@ exports.getFieldsFromString = getFieldsFromString;
 var replaceFieldsWithValue = function (string, fields) {
     var result = string;
     fields.forEach(function (field) {
+        console.log("Replacing text", field.name, "with", field.value);
         if (field.value)
-            result = result.replace("{{ " + field + " }}", field.value);
+            result = result.replace("{{ ".concat(field.name.replace(/ /g, ""), " }}"), field.value);
     });
     return result;
 };

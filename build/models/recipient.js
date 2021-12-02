@@ -17,7 +17,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.Recipient = exports.recipientSchema = void 0;
 var joi_1 = __importDefault(require("joi"));
 exports.recipientSchema = joi_1.default.object().keys({
-    id: joi_1.default.string().optional().allow("").allow(null),
+    _id: joi_1.default.string().optional().allow("").allow(null),
     email: joi_1.default.string()
         .email({ tlds: { allow: false } })
         .required(),
@@ -26,8 +26,8 @@ exports.recipientSchema = joi_1.default.object().keys({
     organization: joi_1.default.string().required(),
     customFields: joi_1.default.array()
         .items(joi_1.default.object().keys({
-        name: joi_1.default.string().required(),
-        value: joi_1.default.string().required(),
+        name: joi_1.default.string().optional(),
+        value: joi_1.default.string().optional(),
     }))
         .required(),
     groups: joi_1.default.array().items(joi_1.default.string()).required(),
@@ -35,6 +35,8 @@ exports.recipientSchema = joi_1.default.object().keys({
 });
 var Recipient = /** @class */ (function () {
     function Recipient(recipient) {
+        if (recipient._id)
+            this._id = recipient._id;
         this.email = recipient.email;
         this.name = recipient.name;
         this.createdAt = recipient.createdAt;
@@ -58,12 +60,23 @@ var Recipient = /** @class */ (function () {
             };
         }
     };
-    Recipient.prototype.create = function (dbCreateRecipient) {
+    Recipient.prototype.create = function (dbCreate) {
         var _this = this;
         return new Promise(function (resolve, reject) {
-            dbCreateRecipient(__assign({}, _this))
+            dbCreate(__assign({}, _this))
                 .then(function (recipient) {
                 resolve(recipient);
+            })
+                .catch(function (err) {
+                reject(err);
+            });
+        });
+    };
+    Recipient.createBulk = function (recipients, dbCreateBulk) {
+        return new Promise(function (resolve, reject) {
+            dbCreateBulk(recipients)
+                .then(function (recipients) {
+                resolve(recipients);
             })
                 .catch(function (err) {
                 reject(err);
@@ -82,9 +95,9 @@ var Recipient = /** @class */ (function () {
             });
         });
     };
-    Recipient.get = function (id, dbGetRecipient) {
+    Recipient.get = function (_id, dbGetRecipient) {
         return new Promise(function (resolve, reject) {
-            dbGetRecipient(id)
+            dbGetRecipient(_id)
                 .then(function (recipient) {
                 resolve(recipient);
             })

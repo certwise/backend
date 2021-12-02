@@ -46,54 +46,58 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
         if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
     }
 };
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.update = exports.get = exports.create = void 0;
-var firestore_1 = require("firebase/firestore");
-var db = (0, firestore_1.getFirestore)();
-var orgCollection = (0, firestore_1.collection)(db, "organizations");
+var _1 = __importDefault(require("."));
+var user_1 = require("./user");
+var orgCollection = _1.default.get("organizations");
 var create = function (organization) { return __awaiter(void 0, void 0, void 0, function () {
-    var org, userCollection, uDoc, user, userData;
+    var createdOrganization, user, e_1;
     return __generator(this, function (_a) {
         switch (_a.label) {
-            case 0: return [4 /*yield*/, (0, firestore_1.addDoc)(orgCollection, organization)];
+            case 0: return [4 /*yield*/, orgCollection.insert(organization)];
             case 1:
-                org = _a.sent();
-                userCollection = (0, firestore_1.collection)(db, "users");
-                uDoc = (0, firestore_1.doc)(userCollection, organization.createdBy);
-                return [4 /*yield*/, (0, firestore_1.getDoc)(uDoc)];
+                createdOrganization = _a.sent();
+                _a.label = 2;
             case 2:
-                user = _a.sent();
-                userData = __assign({ uid: user.id }, user.data());
-                userData.organization = org.id;
-                return [4 /*yield*/, (0, firestore_1.setDoc)(uDoc, userData)];
+                _a.trys.push([2, 5, , 6]);
+                return [4 /*yield*/, (0, user_1.get)(organization.createdBy)];
             case 3:
+                user = _a.sent();
+                user.organization = createdOrganization._id;
+                return [4 /*yield*/, (0, user_1.update)(user)];
+            case 4:
                 _a.sent();
-                return [2 /*return*/, __assign(__assign({}, organization), { id: org.id })];
+                return [2 /*return*/, createdOrganization];
+            case 5:
+                e_1 = _a.sent();
+                console.log(e_1);
+                orgCollection.remove({ _id: createdOrganization._id });
+                throw new Error("Error updating user");
+            case 6: return [2 /*return*/];
         }
     });
 }); };
 exports.create = create;
 var get = function (organizationId) { return __awaiter(void 0, void 0, void 0, function () {
-    var orgDoc, org;
+    var organization;
     return __generator(this, function (_a) {
         switch (_a.label) {
-            case 0:
-                orgDoc = (0, firestore_1.doc)(orgCollection, organizationId);
-                return [4 /*yield*/, (0, firestore_1.getDoc)(orgDoc)];
+            case 0: return [4 /*yield*/, orgCollection.findOne({ _id: organizationId })];
             case 1:
-                org = _a.sent();
-                return [2 /*return*/, __assign(__assign({}, org.data()), { id: org.id })];
+                organization = _a.sent();
+                return [2 /*return*/, organization];
         }
     });
 }); };
 exports.get = get;
 var update = function (organization) { return __awaiter(void 0, void 0, void 0, function () {
-    var orgDoc;
     return __generator(this, function (_a) {
         switch (_a.label) {
-            case 0:
-                orgDoc = (0, firestore_1.doc)(orgCollection, organization.id);
-                return [4 /*yield*/, (0, firestore_1.setDoc)(orgDoc, organization)];
+            case 0: return [4 /*yield*/, orgCollection.update({ _id: organization._id }, { $set: __assign({}, organization) })];
             case 1:
                 _a.sent();
                 return [2 /*return*/, organization];

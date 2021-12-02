@@ -26,33 +26,34 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.Group = exports.groupSchema = void 0;
 var joi_1 = __importDefault(require("joi"));
 exports.groupSchema = joi_1.default.object().keys({
-    id: joi_1.default.string().optional(),
+    _id: joi_1.default.string().optional(),
     name: joi_1.default.string().required(),
     description: joi_1.default.string().required(),
     createdAt: joi_1.default.date().required(),
     updatedAt: joi_1.default.date().required(),
-    recipients: joi_1.default.array().items(joi_1.default.string()).required(),
     organization: joi_1.default.string().required().allow(""),
     createdBy: joi_1.default.string().required(),
     customFields: joi_1.default.array()
         .items(joi_1.default.object().keys({
-        name: joi_1.default.string().required(),
-        value: joi_1.default.string().required(),
+        name: joi_1.default.string().optional(),
+        value: joi_1.default.string().optional(),
+        type: joi_1.default.string().optional(),
     }))
         .required(),
-    certificates: joi_1.default.array().items(joi_1.default.string()).required(),
+    color: joi_1.default.string().required(),
 });
 var Group = /** @class */ (function () {
     function Group(group) {
+        if (group._id)
+            this._id = group._id;
         this.name = group.name;
         this.description = group.description;
         this.createdAt = group.createdAt;
         this.updatedAt = group.updatedAt;
-        this.recipients = group.recipients;
         this.organization = group.organization;
         this.createdBy = group.createdBy;
         this.customFields = group.customFields;
-        this.certificates = group.certificates;
+        this.color = group.color;
     }
     Group.prototype.validate = function () {
         var error = exports.groupSchema.validate(this).error;
@@ -158,37 +159,6 @@ var Group = /** @class */ (function () {
         var data = __assign({}, this);
         if (data.customFields) {
             data.customFields = data.customFields.filter(function (field) { return field.name !== customFieldName; });
-        }
-        return new Promise(function (resolve, reject) {
-            dbUpdateGroup(data)
-                .then(function (res) {
-                resolve(res);
-            })
-                .catch(function () {
-                reject("Database writing error");
-            });
-        });
-    };
-    Group.prototype.addRecipients = function (recipients, dbUpdateGroup) {
-        var data = __assign({}, this);
-        if (data.recipients)
-            data.recipients = __spreadArray(__spreadArray([], data.recipients, true), recipients, true);
-        else
-            data.recipients = recipients;
-        return new Promise(function (resolve, reject) {
-            dbUpdateGroup(data)
-                .then(function (res) {
-                resolve(res.recipients);
-            })
-                .catch(function () {
-                reject("Database writing error");
-            });
-        });
-    };
-    Group.prototype.removeRecipients = function (recipients, dbUpdateGroup) {
-        var data = __assign({}, this);
-        if (data.recipients) {
-            data.recipients = data.recipients.filter(function (recipient) { return !recipients.includes(recipient); });
         }
         return new Promise(function (resolve, reject) {
             dbUpdateGroup(data)

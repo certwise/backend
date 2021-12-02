@@ -51,76 +51,48 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.deleteGroup = exports.update = exports.getByOrganization = exports.getOne = exports.create = void 0;
-var firestore_1 = require("firebase/firestore");
-var dotenv_1 = __importDefault(require("dotenv"));
-dotenv_1.default.config();
-var db = (0, firestore_1.getFirestore)();
-var groupsCollection = (0, firestore_1.collection)(db, "groups");
+var _1 = __importDefault(require("."));
+var groupCollection = _1.default.get("groups");
 var create = function (group) { return __awaiter(void 0, void 0, void 0, function () {
-    var groupRef, orgRef, orgDoc, orgRes, org;
+    var createdOrganization;
     return __generator(this, function (_a) {
         switch (_a.label) {
-            case 0: return [4 /*yield*/, (0, firestore_1.addDoc)(groupsCollection, group)];
+            case 0: return [4 /*yield*/, groupCollection.insert(group)];
             case 1:
-                groupRef = _a.sent();
-                orgRef = (0, firestore_1.collection)(db, "organizations");
-                orgDoc = (0, firestore_1.doc)(orgRef, group.organization);
-                return [4 /*yield*/, (0, firestore_1.getDoc)(orgDoc)];
-            case 2:
-                orgRes = _a.sent();
-                org = orgRes.data();
-                if (org.groups)
-                    org.groups.push(groupRef.id);
-                else
-                    org.groups = [groupRef.id];
-                return [4 /*yield*/, (0, firestore_1.setDoc)(orgDoc, org)];
-            case 3:
-                _a.sent();
-                return [2 /*return*/, __assign({ id: groupRef.id }, group)];
+                createdOrganization = _a.sent();
+                return [2 /*return*/, createdOrganization];
         }
     });
 }); };
 exports.create = create;
 var getOne = function (groupId) { return __awaiter(void 0, void 0, void 0, function () {
-    var groupRef, groupRes, group;
+    var group;
     return __generator(this, function (_a) {
         switch (_a.label) {
-            case 0:
-                groupRef = (0, firestore_1.doc)(groupsCollection, groupId);
-                return [4 /*yield*/, (0, firestore_1.getDoc)(groupRef)];
+            case 0: return [4 /*yield*/, groupCollection.findOne({ _id: groupId })];
             case 1:
-                groupRes = _a.sent();
-                group = __assign({ id: groupId }, groupRes.data());
+                group = _a.sent();
                 return [2 /*return*/, group];
         }
     });
 }); };
 exports.getOne = getOne;
 var getByOrganization = function (organization) { return __awaiter(void 0, void 0, void 0, function () {
-    var gQuery, groups, res;
+    var groups;
     return __generator(this, function (_a) {
         switch (_a.label) {
-            case 0:
-                gQuery = (0, firestore_1.query)(groupsCollection, (0, firestore_1.where)("organization", "==", organization));
-                return [4 /*yield*/, (0, firestore_1.getDocs)(gQuery)];
+            case 0: return [4 /*yield*/, groupCollection.find({ organization: organization })];
             case 1:
                 groups = _a.sent();
-                res = [];
-                groups.forEach(function (group) {
-                    res.push(__assign(__assign({}, group.data()), { id: group.id }));
-                });
-                return [2 /*return*/, res];
+                return [2 /*return*/, groups];
         }
     });
 }); };
 exports.getByOrganization = getByOrganization;
 var update = function (group) { return __awaiter(void 0, void 0, void 0, function () {
-    var groupRef;
     return __generator(this, function (_a) {
         switch (_a.label) {
-            case 0:
-                groupRef = (0, firestore_1.doc)(groupsCollection, group.id);
-                return [4 /*yield*/, (0, firestore_1.setDoc)(groupRef, group)];
+            case 0: return [4 /*yield*/, groupCollection.update({ _id: group._id }, { $set: __assign({}, group) })];
             case 1:
                 _a.sent();
                 return [2 /*return*/, group];
@@ -129,12 +101,9 @@ var update = function (group) { return __awaiter(void 0, void 0, void 0, functio
 }); };
 exports.update = update;
 var deleteGroup = function (groupId) { return __awaiter(void 0, void 0, void 0, function () {
-    var groupRef;
     return __generator(this, function (_a) {
         switch (_a.label) {
-            case 0:
-                groupRef = (0, firestore_1.doc)(groupsCollection, groupId);
-                return [4 /*yield*/, (0, firestore_1.deleteDoc)(groupRef)];
+            case 0: return [4 /*yield*/, groupCollection.remove({ _id: groupId })];
             case 1:
                 _a.sent();
                 return [2 /*return*/];

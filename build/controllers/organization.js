@@ -28,15 +28,17 @@ var create = function (req, res) {
     if (!isValid.error) {
         org
             .create(db.create)
-            .then(function () {
-            res.send(org);
+            .then(function (result) {
+            res.status(200).send(result);
         })
             .catch(function (err) {
-            res.status(500).send(err);
+            console.log(err);
+            res.status(500).send(err.message);
         });
     }
     else {
-        res.status(400).send(isValid.error);
+        console.log(isValid.message);
+        res.status(400).send(isValid.message.toString());
     }
 };
 exports.create = create;
@@ -47,7 +49,7 @@ var get = function (req, res) {
         res.status(200).send(org);
     })
         .catch(function (err) {
-        res.status(500).send(err);
+        res.status(500).send(err.message);
     });
 };
 exports.get = get;
@@ -61,11 +63,13 @@ var update = function (req, res) {
             res.send(org);
         })
             .catch(function (err) {
-            res.status(500).send(err);
+            console.log(err);
+            res.status(500).send(err.message);
         });
     }
     else {
-        res.status(400).send(isValid.error);
+        res.status(400).send(isValid.message);
+        console.log(isValid.message, req.body);
     }
 };
 exports.update = update;

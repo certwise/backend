@@ -19,7 +19,7 @@ var __importStar = (this && this.__importStar) || function (mod) {
     return result;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getByGroup = exports.getByOrganization = exports.deleteRecipient = exports.update = exports.get = exports.create = void 0;
+exports.getByGroup = exports.getByOrganization = exports.deleteRecipient = exports.update = exports.get = exports.createBulk = exports.create = void 0;
 var recipient_1 = require("../models/recipient");
 var db = __importStar(require("../database/recipient"));
 var create = function (req, res) {
@@ -41,13 +41,44 @@ var create = function (req, res) {
     }
 };
 exports.create = create;
+var createBulk = function (req, res) {
+    var recipients = req.body;
+    var isValid = { error: false, message: "" };
+    for (var _i = 0, recipients_1 = recipients; _i < recipients_1.length; _i++) {
+        var r = recipients_1[_i];
+        var recipient = new recipient_1.Recipient(r);
+        var isValid_ = recipient.validate();
+        if (isValid_.error) {
+            isValid.error = true;
+            isValid.message += isValid_.message;
+            break;
+        }
+        else
+            continue;
+    }
+    if (!isValid.error) {
+        recipient_1.Recipient.createBulk(recipients, db.createBulk)
+            .then(function (recipients) {
+            res.status(200).send(recipients);
+        })
+            .catch(function (err) {
+            console.log(err);
+            res.status(500).send(err.toString());
+        });
+    }
+    else {
+        res.status(400).send(isValid.message);
+    }
+};
+exports.createBulk = createBulk;
 var get = function (req, res) {
     recipient_1.Recipient.get(req.params.recipient, db.get)
         .then(function (recipient) {
         res.status(200).send(recipient);
     })
         .catch(function (err) {
-        res.status(500).send(err);
+        console.log(err);
+        res.status(500).send(err.message);
     });
 };
 exports.get = get;
@@ -61,7 +92,7 @@ var update = function (req, res) {
             res.status(200).send(recipient);
         })
             .catch(function (err) {
-            res.status(500).send(err);
+            res.status(500).send(err.message);
         });
     }
     else {
@@ -74,12 +105,12 @@ var deleteRecipient = function (req, res) {
 };
 exports.deleteRecipient = deleteRecipient;
 var getByOrganization = function (req, res) {
-    recipient_1.Recipient.getByOrganization(req.params.organization, db.getByOrganization)
+    recipient_1.Recipient.getByOrganization(req.params.organization, db.getByOrganizaion)
         .then(function (recipient) {
         res.status(200).send(recipient);
     })
         .catch(function (err) {
-        res.status(500).send(err);
+        res.status(500).send(err.message);
     });
 };
 exports.getByOrganization = getByOrganization;
@@ -89,7 +120,7 @@ var getByGroup = function (req, res) {
         res.status(200).send(recipient);
     })
         .catch(function (err) {
-        res.status(500).send(err);
+        res.status(500).send(err.message);
     });
 };
 exports.getByGroup = getByGroup;

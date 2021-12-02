@@ -69,7 +69,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.issue = exports.update = exports.getByGroup = exports.getByTemplate = exports.getByOrganizaion = exports.getOne = exports.createOne = void 0;
+exports.issueOne = exports.update = exports.getByGroup = exports.getByTemplate = exports.getByOrganizaion = exports.getOne = exports.createMany = exports.createOne = void 0;
 var certificate_1 = require("../models/certificate");
 var db = __importStar(require("../database/certificate"));
 var functions_1 = require("../models/template/functions");
@@ -87,14 +87,56 @@ var mailersend = new mailersend_1.default({
 var createOne = function (req, res) {
     var certificate = new certificate_1.Certificate(req.body);
     var isValid = certificate.validate();
+    var certificate_;
     if (!isValid.error) {
         certificate
             .create(db.create, functions_1.getTemplateImage, db.uploadCertificateBuffertoStorage)
-            .then(function (certificate) {
+            .then(function (certificateRes) {
+            certificate_ = certificateRes;
             res.status(200).send(__assign({}, certificate));
         })
+            .catch(function (err) { return __awaiter(void 0, void 0, void 0, function () {
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0:
+                        if (!certificate_._id) return [3 /*break*/, 2];
+                        return [4 /*yield*/, db.deleteCertificate(certificate_._id)];
+                    case 1:
+                        _a.sent();
+                        _a.label = 2;
+                    case 2:
+                        console.log(err);
+                        res.status(400).send(err.toString());
+                        return [2 /*return*/];
+                }
+            });
+        }); });
+    }
+    else {
+        res.status(400).send("Error:" + isValid.message);
+    }
+};
+exports.createOne = createOne;
+var createMany = function (req, res) {
+    var certificates = req.body;
+    var isValid = { error: false, message: "" };
+    for (var _i = 0, certificates_1 = certificates; _i < certificates_1.length; _i++) {
+        var certificate = certificates_1[_i];
+        var cert = new certificate_1.Certificate(certificate);
+        var isValid_ = cert.validate();
+        if (!isValid_.error) {
+            isValid = isValid_;
+            break;
+        }
+        else
+            continue;
+    }
+    if (!isValid.error) {
+        certificate_1.Certificate.createMany(certificates, db.createMany, functions_1.getTemplateImage, db.uploadCertificateBuffertoStorage)
+            .then(function (certificates) {
+            res.status(200).send(certificates);
+        })
             .catch(function (err) {
-            console.log(err);
             res.status(400).send(err.toString());
         });
     }
@@ -102,7 +144,7 @@ var createOne = function (req, res) {
         res.status(400).send("Error:" + isValid.message);
     }
 };
-exports.createOne = createOne;
+exports.createMany = createMany;
 var getOne = function (req, res) {
     var certificateId = req.params.certificateId;
     certificate_1.Certificate.getOne(certificateId, db.getOne)
@@ -157,15 +199,15 @@ var update = function (req, res) {
             res.status(200).send(certificate);
         })
             .catch(function (err) {
-            res.status(500).send(err);
+            res.status(500).send(err.message);
         });
     }
     else {
-        res.status(400).send("Invalid request body. " + isValid.message);
+        res.status(400).send("Invalid request body. ".concat(isValid.message));
     }
 };
 exports.update = update;
-var issue = function (req, res) {
+var issueOne = function (req, res) {
     var certificateId = req.params.certificate;
     certificate_1.Certificate.getOne(certificateId, db.getOne)
         .then(function (certificate) {
@@ -173,15 +215,17 @@ var issue = function (req, res) {
         res.status(200).send(certificate);
     })
         .catch(function (err) {
-        res.status(500).send(err);
+        res.status(500).send(err.message);
     });
 };
-exports.issue = issue;
+exports.issueOne = issueOne;
 var sendEmail = function (recipient_, templateId) { return __awaiter(void 0, void 0, void 0, function () {
     var recipient, organization;
     return __generator(this, function (_a) {
         switch (_a.label) {
-            case 0: return [4 /*yield*/, (0, recipient_1.get)(recipient_)];
+            case 0:
+                console.log("Sending email to " + recipient_);
+                return [4 /*yield*/, (0, recipient_1.get)(recipient_)];
             case 1:
                 recipient = _a.sent();
                 return [4 /*yield*/, (0, organization_1.get)(recipient.organization)];

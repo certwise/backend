@@ -46,217 +46,209 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
         if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
     }
 };
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.uploadCertificateBuffertoStorage = exports.getRevokedByOrg = exports.getByIssuer = exports.getByRecipient = exports.update = exports.getByOrganization = exports.getByGroup = exports.getByTemplate = exports.getOne = exports.create = void 0;
-var firestore_1 = require("firebase/firestore");
+exports.deleteCertificate = exports.uploadCertificateBuffertoStorage = exports.getExpired = exports.getIssued = exports.getRevokedByOrg = exports.getByIssuer = exports.getByRecipient = exports.update = exports.getByOrganization = exports.getByGroup = exports.getByTemplate = exports.getOne = exports.createMany = exports.create = void 0;
+var _1 = __importDefault(require("."));
 var storage_1 = require("firebase/storage");
-var db = (0, firestore_1.getFirestore)();
-var certificateCollection = (0, firestore_1.collection)(db, "certificates");
+var certificateCollection = _1.default.get("certificates");
 var create = function (certificate) { return __awaiter(void 0, void 0, void 0, function () {
-    var templateCollection, certRef, templateDoc, templateRes, template, organizationCollection, oDoc, oRes, organization, recipientCollection, recipientDoc, recipientRes, recipient, groupCollection, groupDoc, groupRes, group;
+    var result;
     return __generator(this, function (_a) {
         switch (_a.label) {
-            case 0:
-                templateCollection = (0, firestore_1.collection)(db, "templates");
-                return [4 /*yield*/, (0, firestore_1.addDoc)(certificateCollection, certificate)];
+            case 0: return [4 /*yield*/, certificateCollection.insert(certificate)];
             case 1:
-                certRef = _a.sent();
-                templateDoc = (0, firestore_1.doc)(templateCollection, certificate.templateId);
-                return [4 /*yield*/, (0, firestore_1.getDoc)(templateDoc)];
-            case 2:
-                templateRes = _a.sent();
-                template = templateRes.data();
-                console.log("create cert template:", template);
-                template.numberOfCertificates++;
-                if (template.certificates)
-                    template.certificates.push(certRef.id);
-                else
-                    template.certificates = [certRef.id];
-                return [4 /*yield*/, (0, firestore_1.setDoc)(templateDoc, template)];
-            case 3:
-                _a.sent(); //set in template
-                organizationCollection = (0, firestore_1.collection)(db, "organizations");
-                oDoc = (0, firestore_1.doc)(organizationCollection, certificate.organization);
-                return [4 /*yield*/, (0, firestore_1.getDoc)(oDoc)];
-            case 4:
-                oRes = _a.sent();
-                organization = oRes.data();
-                console.log("create cert org:", organization);
-                if (organization.certificates)
-                    organization.certificates.push(certRef.id);
-                else
-                    organization.certificates = [certRef.id];
-                return [4 /*yield*/, (0, firestore_1.setDoc)(oDoc, organization)];
-            case 5:
-                _a.sent(); //set in organization
-                recipientCollection = (0, firestore_1.collection)(db, "recipients");
-                recipientDoc = (0, firestore_1.doc)(recipientCollection, certificate.recipient);
-                return [4 /*yield*/, (0, firestore_1.getDoc)(recipientDoc)];
-            case 6:
-                recipientRes = _a.sent();
-                recipient = recipientRes.data();
-                console.log("create cert reci:", recipient);
-                if (recipient === null || recipient === void 0 ? void 0 : recipient.certificates)
-                    recipient.certificates.push(certRef.id);
-                else
-                    recipient.certificates = [certRef.id];
-                return [4 /*yield*/, (0, firestore_1.setDoc)(recipientDoc, recipient)];
-            case 7:
-                _a.sent(); //set in recipient
-                groupCollection = (0, firestore_1.collection)(db, "groups");
-                if (!(certificate.group !== false)) return [3 /*break*/, 10];
-                groupDoc = (0, firestore_1.doc)(groupCollection, certificate.group);
-                return [4 /*yield*/, (0, firestore_1.getDoc)(groupDoc)];
-            case 8:
-                groupRes = _a.sent();
-                group = groupRes.data();
-                if (group.certificates)
-                    group.certificates.push(certRef.id);
-                else
-                    group.certificates = [certRef.id];
-                return [4 /*yield*/, (0, firestore_1.setDoc)(groupDoc, group)];
-            case 9:
-                _a.sent(); //set in group
-                _a.label = 10;
-            case 10: return [2 /*return*/, __assign({ id: certRef.id }, certificate)];
+                result = _a.sent();
+                return [2 /*return*/, result];
         }
     });
 }); };
 exports.create = create;
-var getOne = function (id) { return __awaiter(void 0, void 0, void 0, function () {
-    var cert;
+var createMany = function (certificates) { return __awaiter(void 0, void 0, void 0, function () {
+    var result;
     return __generator(this, function (_a) {
         switch (_a.label) {
-            case 0: return [4 /*yield*/, (0, firestore_1.getDoc)((0, firestore_1.doc)(certificateCollection, id))];
+            case 0: return [4 /*yield*/, certificateCollection.insert(certificates)];
             case 1:
-                cert = _a.sent();
-                return [2 /*return*/, __assign(__assign({}, cert.data()), { id: id })];
+                result = _a.sent();
+                return [2 /*return*/, result];
+        }
+    });
+}); };
+exports.createMany = createMany;
+var getOne = function (id) { return __awaiter(void 0, void 0, void 0, function () {
+    var result;
+    return __generator(this, function (_a) {
+        switch (_a.label) {
+            case 0: return [4 /*yield*/, certificateCollection.findOne({ _id: id })];
+            case 1:
+                result = _a.sent();
+                if (!result)
+                    throw new Error("Certificate not found.");
+                else
+                    return [2 /*return*/, result];
+                return [2 /*return*/];
         }
     });
 }); };
 exports.getOne = getOne;
 var getByTemplate = function (templateId) { return __awaiter(void 0, void 0, void 0, function () {
-    var cQuery, certs, res;
+    var result;
     return __generator(this, function (_a) {
         switch (_a.label) {
-            case 0:
-                cQuery = (0, firestore_1.query)(certificateCollection, (0, firestore_1.where)("templateId", "==", templateId));
-                return [4 /*yield*/, (0, firestore_1.getDocs)(cQuery)];
+            case 0: return [4 /*yield*/, certificateCollection.find({ templateId: templateId })];
             case 1:
-                certs = _a.sent();
-                res = [];
-                certs.forEach(function (cert) {
-                    res.push(__assign(__assign({}, cert.data()), { id: cert.id }));
-                });
-                return [2 /*return*/, res];
+                result = _a.sent();
+                if (!result)
+                    throw new Error("No certificates created in this template.");
+                else
+                    return [2 /*return*/, result];
+                return [2 /*return*/];
         }
     });
 }); };
 exports.getByTemplate = getByTemplate;
 var getByGroup = function (group) { return __awaiter(void 0, void 0, void 0, function () {
-    var gQuery, certs, res;
+    var result;
     return __generator(this, function (_a) {
         switch (_a.label) {
-            case 0:
-                gQuery = (0, firestore_1.query)(certificateCollection, (0, firestore_1.where)("group", "==", group));
-                return [4 /*yield*/, (0, firestore_1.getDocs)(gQuery)];
+            case 0: return [4 /*yield*/, certificateCollection.find({ group: group })];
             case 1:
-                certs = _a.sent();
-                res = [];
-                certs.forEach(function (cert) {
-                    res.push(__assign(__assign({}, cert.data()), { id: cert.id }));
-                });
-                return [2 /*return*/, res];
+                result = _a.sent();
+                if (!result)
+                    throw new Error("No certificates created in this group.");
+                else
+                    return [2 /*return*/, result];
+                return [2 /*return*/];
         }
     });
 }); };
 exports.getByGroup = getByGroup;
-var getByOrganization = function (organization) { return __awaiter(void 0, void 0, void 0, function () {
-    var oQuery, certs, res;
+var getByOrganization = function (organixation) { return __awaiter(void 0, void 0, void 0, function () {
+    var result;
     return __generator(this, function (_a) {
         switch (_a.label) {
-            case 0:
-                oQuery = (0, firestore_1.query)(certificateCollection, (0, firestore_1.where)("organization", "==", organization));
-                return [4 /*yield*/, (0, firestore_1.getDocs)(oQuery)];
+            case 0: return [4 /*yield*/, certificateCollection.find({
+                    organization: organixation,
+                })];
             case 1:
-                certs = _a.sent();
-                res = [];
-                certs.forEach(function (cert) {
-                    res.push(__assign(__assign({}, cert.data()), { id: cert.id }));
-                });
-                return [2 /*return*/, res];
+                result = _a.sent();
+                if (!result)
+                    throw new Error("No certificates created in this organization.");
+                else
+                    return [2 /*return*/, result];
+                return [2 /*return*/];
         }
     });
 }); };
 exports.getByOrganization = getByOrganization;
 var update = function (certificate) { return __awaiter(void 0, void 0, void 0, function () {
-    var cDoc;
+    var result;
     return __generator(this, function (_a) {
         switch (_a.label) {
-            case 0:
-                cDoc = (0, firestore_1.doc)(certificateCollection, certificate.id);
-                return [4 /*yield*/, (0, firestore_1.setDoc)(cDoc, certificate)];
+            case 0: return [4 /*yield*/, certificateCollection.update({ _id: certificate._id }, { $set: __assign({}, certificate) })];
             case 1:
-                _a.sent();
-                return [2 /*return*/, certificate];
+                result = _a.sent();
+                if (!result)
+                    throw new Error("Certificate not found.");
+                else
+                    return [2 /*return*/, certificate];
+                return [2 /*return*/];
         }
     });
 }); };
 exports.update = update;
 var getByRecipient = function (recipient) { return __awaiter(void 0, void 0, void 0, function () {
-    var rQuery, certs, res;
+    var result;
     return __generator(this, function (_a) {
         switch (_a.label) {
-            case 0:
-                rQuery = (0, firestore_1.query)(certificateCollection, (0, firestore_1.where)("recipient", "==", recipient));
-                return [4 /*yield*/, (0, firestore_1.getDocs)(rQuery)];
+            case 0: return [4 /*yield*/, certificateCollection.find({ recipient: recipient })];
             case 1:
-                certs = _a.sent();
-                res = [];
-                certs.forEach(function (cert) {
-                    res.push(__assign(__assign({}, cert.data()), { id: cert.id }));
-                });
-                return [2 /*return*/, res];
+                result = _a.sent();
+                if (!result)
+                    throw new Error("No certificates created for this recipient.");
+                else
+                    return [2 /*return*/, result];
+                return [2 /*return*/];
         }
     });
 }); };
 exports.getByRecipient = getByRecipient;
 var getByIssuer = function (issuer) { return __awaiter(void 0, void 0, void 0, function () {
-    var iQuery, certs, res;
+    var result;
     return __generator(this, function (_a) {
         switch (_a.label) {
-            case 0:
-                iQuery = (0, firestore_1.query)(certificateCollection, (0, firestore_1.where)("issuer", "==", issuer));
-                return [4 /*yield*/, (0, firestore_1.getDocs)(iQuery)];
+            case 0: return [4 /*yield*/, certificateCollection.find({ issuer: issuer })];
             case 1:
-                certs = _a.sent();
-                res = [];
-                certs.forEach(function (cert) {
-                    res.push(__assign(__assign({}, cert.data()), { id: cert.id }));
-                });
-                return [2 /*return*/, res];
+                result = _a.sent();
+                if (!result)
+                    throw new Error("No certificates created by this issuer.");
+                else
+                    return [2 /*return*/, result];
+                return [2 /*return*/];
         }
     });
 }); };
 exports.getByIssuer = getByIssuer;
 var getRevokedByOrg = function (organization) { return __awaiter(void 0, void 0, void 0, function () {
-    var iQuery, certs, res;
+    var result;
     return __generator(this, function (_a) {
         switch (_a.label) {
-            case 0:
-                iQuery = (0, firestore_1.query)(certificateCollection, (0, firestore_1.where)("organization", "==", organization), (0, firestore_1.where)("revoked", "==", true));
-                return [4 /*yield*/, (0, firestore_1.getDocs)(iQuery)];
+            case 0: return [4 /*yield*/, certificateCollection.find({
+                    organization: organization,
+                    isRevoked: true,
+                })];
             case 1:
-                certs = _a.sent();
-                res = [];
-                certs.forEach(function (cert) {
-                    res.push(__assign(__assign({}, cert.data()), { id: cert.id }));
-                });
-                return [2 /*return*/, res];
+                result = _a.sent();
+                if (!result)
+                    throw new Error("No revoked certificates in this organization.");
+                else
+                    return [2 /*return*/, result];
+                return [2 /*return*/];
         }
     });
 }); };
 exports.getRevokedByOrg = getRevokedByOrg;
+var getIssued = function (organization) { return __awaiter(void 0, void 0, void 0, function () {
+    var result;
+    return __generator(this, function (_a) {
+        switch (_a.label) {
+            case 0: return [4 /*yield*/, certificateCollection.find({
+                    organization: organization,
+                    isIssued: true,
+                })];
+            case 1:
+                result = _a.sent();
+                if (!result)
+                    throw new Error("No issued certificates in this organization.");
+                else
+                    return [2 /*return*/, result];
+                return [2 /*return*/];
+        }
+    });
+}); };
+exports.getIssued = getIssued;
+var getExpired = function (organization) { return __awaiter(void 0, void 0, void 0, function () {
+    var result;
+    return __generator(this, function (_a) {
+        switch (_a.label) {
+            case 0: return [4 /*yield*/, certificateCollection.find({
+                    organization: organization,
+                    validTill: { $lt: new Date() },
+                })];
+            case 1:
+                result = _a.sent();
+                if (!result)
+                    throw new Error("No expired certificates in this organization.");
+                else
+                    return [2 /*return*/, result];
+                return [2 /*return*/];
+        }
+    });
+}); };
+exports.getExpired = getExpired;
 var uploadCertificateBuffertoStorage = function (buffer, storageRef) { return __awaiter(void 0, void 0, void 0, function () {
     return __generator(this, function (_a) {
         return [2 /*return*/, new Promise(function (resolve, reject) {
@@ -273,3 +265,19 @@ var uploadCertificateBuffertoStorage = function (buffer, storageRef) { return __
     });
 }); };
 exports.uploadCertificateBuffertoStorage = uploadCertificateBuffertoStorage;
+var deleteCertificate = function (id) { return __awaiter(void 0, void 0, void 0, function () {
+    var result;
+    return __generator(this, function (_a) {
+        switch (_a.label) {
+            case 0: return [4 /*yield*/, certificateCollection.remove({ _id: id })];
+            case 1:
+                result = _a.sent();
+                if (!result)
+                    throw new Error("Certificate not found.");
+                else
+                    return [2 /*return*/, result];
+                return [2 /*return*/];
+        }
+    });
+}); };
+exports.deleteCertificate = deleteCertificate;

@@ -17,7 +17,7 @@ var app = (0, express_1.default)();
 var dotenv_1 = __importDefault(require("dotenv"));
 dotenv_1.default.config();
 app.use((0, cors_1.default)());
-app.use(express_1.default.urlencoded({ extended: true }));
+app.use(express_1.default.urlencoded({ extended: true, limit: "50mb" }));
 app.use(function (req, res, next) {
     console.log(req.method, req.url);
     res.header("Access-Control-Allow-Origin", "*");
@@ -27,7 +27,7 @@ app.use(function (req, res, next) {
     next();
 });
 // parse application/json
-app.use(express_1.default.json());
+app.use(express_1.default.json({ limit: "50mb" }));
 app.use("/template", template_1.default);
 app.use("/certificate", certificate_1.default);
 app.use("/payment", payment_1.default);
@@ -40,5 +40,5 @@ app.get("/", function (req, res) {
     res.send("CertWise Api");
 });
 app.listen(config_1.default.PORT, function () {
-    return console.log("Server started at port " + process.env.PORT);
+    return console.log("Server started at port ".concat(process.env.PORT));
 });

@@ -28,5 +28,5 @@ var router = express_1.default.Router();
 router.get("/:uid", controllers.get);
 router.post("/", controllers.create);
 router.put("/", controllers.update);
-// router.delete('/:id', deleteUser)
+router.delete("/:uid", controllers.deleteUser);
 exports.default = router;

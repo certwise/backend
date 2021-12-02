@@ -53,7 +53,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.Certificate = exports.certificateSchema = void 0;
 var joi_1 = __importDefault(require("joi"));
 exports.certificateSchema = joi_1.default.object().keys({
-    id: joi_1.default.string().optional(),
+    _id: joi_1.default.string().optional(),
     issuer: joi_1.default.string().required(),
     isIssued: joi_1.default.boolean().required().default(false),
     templateId: joi_1.default.string().required(),
@@ -77,6 +77,8 @@ exports.certificateSchema = joi_1.default.object().keys({
 });
 var Certificate = /** @class */ (function () {
     function Certificate(data) {
+        if (data._id)
+            this._id = data._id;
         this.issuer = data.issuer;
         this.isIssued = data.isIssued;
         this.templateId = data.templateId;
@@ -118,7 +120,7 @@ var Certificate = /** @class */ (function () {
                         return [4 /*yield*/, getTemplateImage(createdCert.templateId, createdCert.fields)];
                     case 2:
                         templateImageBuffer = _a.sent();
-                        storageRef = createdCert.organization + "/certificates/" + createdCert.id + ".jpg";
+                        storageRef = "".concat(createdCert.organization, "/certificates/").concat(createdCert._id, ".jpg");
                         return [4 /*yield*/, uploadBufferToStorage(templateImageBuffer, storageRef)];
                     case 3:
                         _a.sent();
@@ -127,6 +129,40 @@ var Certificate = /** @class */ (function () {
                         err_1 = _a.sent();
                         throw new Error(err_1.toString());
                     case 5: return [2 /*return*/];
+                }
+            });
+        });
+    };
+    Certificate.createMany = function (certificates, dbCreateMany, getTemplateImage, uploadBufferToStorage) {
+        return __awaiter(this, void 0, void 0, function () {
+            var createdCertificates, promises, imageBuffers, imagePromises, storageRefs, certificatesWithStorageRefs;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0: return [4 /*yield*/, dbCreateMany(certificates)];
+                    case 1:
+                        createdCertificates = _a.sent();
+                        console.log("Created many certificates:", createdCertificates);
+                        promises = [];
+                        createdCertificates.forEach(function (certificate) {
+                            console.log("Creating certificate image for:", certificate._id);
+                            var templateImageBuffer = getTemplateImage(certificate.templateId, certificate.fields);
+                            promises.push(templateImageBuffer);
+                        });
+                        return [4 /*yield*/, Promise.all(promises)];
+                    case 2:
+                        imageBuffers = _a.sent();
+                        imagePromises = [];
+                        imageBuffers.forEach(function (imageBuffer, index) {
+                            var storageRef = "".concat(createdCertificates[index].organization, "/certificates/").concat(createdCertificates[index]._id, ".jpg");
+                            imagePromises.push(uploadBufferToStorage(imageBuffer, storageRef));
+                        });
+                        return [4 /*yield*/, Promise.all(imagePromises)];
+                    case 3:
+                        storageRefs = _a.sent();
+                        certificatesWithStorageRefs = certificates.map(function (certificate, index) {
+                            return __assign(__assign({}, certificate), { storageRef: storageRefs[index] });
+                        });
+                        return [2 /*return*/, certificatesWithStorageRefs];
                 }
             });
         });
@@ -146,8 +182,8 @@ var Certificate = /** @class */ (function () {
     Certificate.prototype.delete = function (dbDelete) {
         var _this = this;
         return new Promise(function (resolve, reject) {
-            if (_this.id) {
-                var id = _this.id;
+            if (_this._id) {
+                var id = _this._id;
                 dbDelete(id)
                     .then(function () {
                     resolve();
@@ -256,12 +292,14 @@ var Certificate = /** @class */ (function () {
         var data = __assign({}, this);
         data.isRevoked = false;
         data.lastUpdated = new Date();
+        data.isIssued = true;
         return new Promise(function (resolve, reject) {
             dbUpdate(data)
                 .then(function () {
                 return sendEmail(data.recipient, data.templateId);
             })
                 .then(function () {
+                console.log("Email sent");
                 resolve(data);
             })
                 .catch(function (err) {
