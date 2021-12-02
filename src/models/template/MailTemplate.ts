@@ -4,5 +4,4 @@ export interface MailTemplate {
 	subject: string;
 	cc: string;
 	message: string;
-	fields: Array<string>;
 }

@@ -1,5 +1,6 @@
 import Joi from "joi";
 export interface IUser {
+	_id?: string;
 	uid: string;
 	name: string;
 	email: string;
@@ -8,8 +9,6 @@ export interface IUser {
 	createdAt: Date;
 	photoURL?: string;
 	updatedAt: Date;
-	numberOfTemplatesCreated: number;
-	numberOfCerificatesCreated: number;
 }
 
 export const UserSchema = Joi.object().keys({
@@ -21,11 +20,10 @@ export const UserSchema = Joi.object().keys({
 	createdAt: Joi.date().required(),
 	photoURL: Joi.string().optional(),
 	updatedAt: Joi.date().required(),
-	numberOfTemplatesCreated: Joi.number().required(),
-	numberOfCerificatesCreated: Joi.number().required(),
 });
 
 export class User implements IUser {
+	_id?: string;
 	uid: string;
 	name: string;
 	email: string;
@@ -34,10 +32,9 @@ export class User implements IUser {
 	createdAt: Date;
 	photoURL?: string;
 	updatedAt: Date;
-	numberOfTemplatesCreated: number;
-	numberOfCerificatesCreated: number;
 
 	constructor(user: IUser) {
+		if (user._id) this._id = user._id;
 		this.uid = user.uid;
 		this.name = user.name;
 		this.email = user.email;
@@ -45,8 +42,6 @@ export class User implements IUser {
 		this.isVerified = user.isVerified;
 		this.createdAt = user.createdAt;
 		this.updatedAt = user.updatedAt;
-		this.numberOfTemplatesCreated = user.numberOfTemplatesCreated;
-		this.numberOfCerificatesCreated = user.numberOfCerificatesCreated;
 	}
 
 	validate(): { error: boolean; message: string } {
@@ -97,6 +92,21 @@ export class User implements IUser {
 			dbGet(uid)
 				.then((user) => {
 					resolve(user);
+				})
+				.catch((error) => {
+					reject(error);
+				});
+		});
+	}
+
+	static delete(
+		uid: string,
+		dbDelete: (uid: string) => Promise<void>
+	): Promise<void> {
+		return new Promise((resolve, reject) => {
+			dbDelete(uid)
+				.then(() => {
+					resolve();
 				})
 				.catch((error) => {
 					reject(error);

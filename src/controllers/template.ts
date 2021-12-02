@@ -14,7 +14,7 @@ export const create = (req: Request, res: Response) => {
 				res.status(201).send(template);
 			})
 			.catch((err) => {
-				res.status(500).send(err);
+				res.status(500).send(err.message);
 			});
 	}
 };
@@ -26,7 +26,7 @@ export const getById = (req: Request, res: Response) => {
 			res.status(200).send(template);
 		})
 		.catch((err) => {
-			res.status(500).send(err);
+			res.status(500).send(err.message);
 		});
 };
 
@@ -37,7 +37,7 @@ export const getByOrganization = (req: Request, res: Response) => {
 			res.status(200).send(templates);
 		})
 		.catch((err) => {
-			res.status(500).send(err);
+			res.status(500).send(err.message);
 		});
 };
 
@@ -53,7 +53,7 @@ export const update = (req: Request, res: Response) => {
 				res.status(200).send(updatedTemplate);
 			})
 			.catch((err) => {
-				res.status(500).send(err);
+				res.status(500).send(err.message);
 			});
 	}
 };
@@ -64,7 +64,7 @@ export const deleteTemplate = (req: Request, res: Response) => {
 			res.status(200).send();
 		})
 		.catch((err) => {
-			res.status(500).send(err);
+			res.status(500).send(err.message);
 		});
 };
 
@@ -86,6 +86,6 @@ export const getNumberOfCertificates = (req: Request, res: Response) => {
 			res.status(200).send(numberOfCertificates);
 		})
 		.catch((err) => {
-			res.status(500).send(err);
+			res.status(500).send(err.message);
 		});
 };

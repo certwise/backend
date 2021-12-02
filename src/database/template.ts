@@ -1,65 +1,45 @@
-import {
-	getFirestore,
-	collection,
-	addDoc,
-	setDoc,
-	doc,
-	getDoc,
-	getDocs,
-	query,
-	where,
-	deleteDoc,
-} from "firebase/firestore";
 import { ITemplate } from "../models/template";
+import db from ".";
 
-const db = getFirestore();
-const templateCollection = collection(db, "templates");
+const templateCollection = db.get("templates");
 
 export const create = async (template: ITemplate) => {
-	const { id } = await addDoc(templateCollection, template);
-	return { id, ...template };
+	const result = await templateCollection.insert(template);
+	return result as ITemplate;
 };
 
 export const getOne = async (templateId: string) => {
-	const tDoc = doc(templateCollection, templateId);
-	const template = await getDoc(tDoc);
-	return { id: template.id, ...template.data() } as ITemplate;
+	const result = await templateCollection.findOne({ _id: templateId });
+	return result as ITemplate;
 };
 
 export const getByOrganization = async (organization: string) => {
-	const tQuery = query(
-		templateCollection,
-		where("organization", "==", organization)
-	);
-	const templates = await getDocs(tQuery);
-	const res: ITemplate[] = [];
-	templates.forEach((t) => {
-		res.push({ id: t.id, ...t.data() } as ITemplate);
-	});
-	return res;
+	const result = await templateCollection.find({ organization: organization });
+	return result as ITemplate[];
 };
 
 export const getByGroup = async (group: string) => {
-	const tQuery = query(
-		templateCollection,
-		where("groups", "array-contains", group)
-	);
-	const templates = await getDocs(tQuery);
-	const res: ITemplate[] = [];
-	templates.forEach((t) => {
-		res.push({ id: t.id, ...t.data() } as ITemplate);
-	});
-	return res;
+	const result = await templateCollection.find({ group: group });
+	return result as ITemplate[];
 };
 
 export const update = async (template: ITemplate) => {
-	const tDoc = doc(templateCollection, template.id);
-	await setDoc(tDoc, template);
-	return { id: template.id, ...template };
+	console.log("Template id", template._id);
+	await templateCollection.findOneAndUpdate(
+		{ _id: template._id },
+		{ $set: { ...template } }
+	);
+	return template;
 };
 
 export const deleteTemplate = async (id: string) => {
-	const tDoc = doc(templateCollection, id);
-	await deleteDoc(tDoc);
-	return;
+	await templateCollection.remove({ _id: id });
+};
+
+export const getArchivedByOrganization = async (organization: string) => {
+	const result = await templateCollection.find({
+		organization: organization,
+		archived: true,
+	});
+	return result as ITemplate[];
 };

@@ -1,4 +1,4 @@
-import { Certificate } from "../models/certificate";
+import { Certificate, ICertificate } from "../models/certificate";
 import { Request, Response } from "express";
 import * as db from "../database/certificate";
 import { getTemplateImage } from "../models/template/functions";
@@ -19,14 +19,46 @@ const mailersend = new MailerSend({
 export const createOne = (req: Request, res: Response) => {
 	const certificate = new Certificate(req.body);
 	const isValid = certificate.validate();
+	let certificate_: ICertificate;
 	if (!isValid.error) {
 		certificate
 			.create(db.create, getTemplateImage, db.uploadCertificateBuffertoStorage)
-			.then((certificate) => {
+			.then((certificateRes) => {
+				certificate_ = certificateRes;
 				res.status(200).send({ ...certificate });
 			})
-			.catch((err) => {
+			.catch(async (err) => {
+				if (certificate_._id) await db.deleteCertificate(certificate_._id);
 				console.log(err);
+				res.status(400).send(err.toString());
+			});
+	} else {
+		res.status(400).send("Error:" + isValid.message);
+	}
+};
+
+export const createMany = (req: Request, res: Response) => {
+	const certificates = req.body;
+	let isValid = { error: false, message: "" };
+	for (const certificate of certificates) {
+		const cert = new Certificate(certificate);
+		const isValid_ = cert.validate();
+		if (!isValid_.error) {
+			isValid = isValid_;
+			break;
+		} else continue;
+	}
+	if (!isValid.error) {
+		Certificate.createMany(
+			certificates,
+			db.createMany,
+			getTemplateImage,
+			db.uploadCertificateBuffertoStorage
+		)
+			.then((certificates) => {
+				res.status(200).send(certificates);
+			})
+			.catch((err) => {
 				res.status(400).send(err.toString());
 			});
 	} else {
@@ -88,14 +120,14 @@ export const update = (req: Request, res: Response) => {
 				res.status(200).send(certificate);
 			})
 			.catch((err) => {
-				res.status(500).send(err);
+				res.status(500).send(err.message);
 			});
 	} else {
 		res.status(400).send(`Invalid request body. ${isValid.message}`);
 	}
 };
 
-export const issue = (req: Request, res: Response) => {
+export const issueOne = (req: Request, res: Response) => {
 	const certificateId = req.params.certificate;
 	Certificate.getOne(certificateId, db.getOne)
 		.then((certificate) => {
@@ -103,11 +135,12 @@ export const issue = (req: Request, res: Response) => {
 			res.status(200).send(certificate);
 		})
 		.catch((err) => {
-			res.status(500).send(err);
+			res.status(500).send(err.message);
 		});
 };
 
 const sendEmail = async (recipient_: string, templateId: string) => {
+	console.log("Sending email to " + recipient_);
 	const recipient: IRecipient = await getRecipient(recipient_);
 	const organization: IOrganization = await getOrganization(
 		recipient.organization

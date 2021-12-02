@@ -1,22 +1,22 @@
 import Joi from "joi";
-import { Field } from "./certificate";
+import { CustomField } from "./organization";
 
 // Recipient is unique for each organization (primary key is organization&&email)
 // One end user shall be assigned to multiple recipient documents
 // Two or more recipient docs can have same emails in different organizations
 export interface IRecipient {
-	id?: string;
+	_id?: string;
 	email: string;
 	name: string;
 	createdAt: Date;
-	customFields: Field[];
+	customFields: CustomField[];
 	organization: string;
 	groups: string[];
 	certificates: string[];
 }
 
 export const recipientSchema = Joi.object().keys({
-	id: Joi.string().optional().allow("").allow(null),
+	_id: Joi.string().optional().allow("").allow(null),
 	email: Joi.string()
 		.email({ tlds: { allow: false } })
 		.required(),
@@ -26,8 +26,8 @@ export const recipientSchema = Joi.object().keys({
 	customFields: Joi.array()
 		.items(
 			Joi.object().keys({
-				name: Joi.string().required(),
-				value: Joi.string().required(),
+				name: Joi.string().optional(),
+				value: Joi.string().optional(),
 			})
 		)
 		.required(),
@@ -36,16 +36,17 @@ export const recipientSchema = Joi.object().keys({
 });
 
 export class Recipient implements IRecipient {
-	id?: string;
+	_id?: string;
 	email: string;
 	name: string;
 	createdAt: Date;
-	customFields: Field[];
+	customFields: CustomField[];
 	organization: string;
 	groups: string[];
 	certificates: string[];
 
 	constructor(recipient: IRecipient) {
+		if (recipient._id) this._id = recipient._id;
 		this.email = recipient.email;
 		this.name = recipient.name;
 		this.createdAt = recipient.createdAt;
@@ -71,12 +72,27 @@ export class Recipient implements IRecipient {
 	}
 
 	create(
-		dbCreateRecipient: (recipient: IRecipient) => Promise<IRecipient>
+		dbCreate: (recipient: IRecipient) => Promise<IRecipient>
 	): Promise<IRecipient> {
 		return new Promise((resolve, reject) => {
-			dbCreateRecipient({ ...this })
+			dbCreate({ ...this })
 				.then((recipient) => {
 					resolve(recipient);
+				})
+				.catch((err) => {
+					reject(err);
+				});
+		});
+	}
+
+	static createBulk(
+		recipients: IRecipient[],
+		dbCreateBulk: (recipients: IRecipient[]) => Promise<IRecipient[]>
+	): Promise<IRecipient[]> {
+		return new Promise((resolve, reject) => {
+			dbCreateBulk(recipients)
+				.then((recipients) => {
+					resolve(recipients);
 				})
 				.catch((err) => {
 					reject(err);
@@ -99,11 +115,11 @@ export class Recipient implements IRecipient {
 	}
 
 	static get(
-		id: string,
-		dbGetRecipient: (id: string) => Promise<IRecipient>
+		_id: string,
+		dbGetRecipient: (_id: string) => Promise<IRecipient>
 	): Promise<IRecipient> {
 		return new Promise((resolve, reject) => {
-			dbGetRecipient(id)
+			dbGetRecipient(_id)
 				.then((recipient) => {
 					resolve(recipient);
 				})

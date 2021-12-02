@@ -1,42 +1,35 @@
-import {
-	getFirestore,
-	collection,
-	addDoc,
-	setDoc,
-	doc,
-	getDoc,
-	getDocs,
-	query,
-	where,
-	deleteDoc,
-} from "firebase/firestore";
-import { IOrganization, Organization } from "../models/organization";
+import db from ".";
+import { IOrganization } from "../models/organization";
 import { IUser } from "../models/user";
+import { get as getUser, update as updateUser } from "./user";
 
-const db = getFirestore();
-const orgCollection = collection(db, "organizations");
+const orgCollection = db.get("organizations");
 
 export const create = async (organization: IOrganization) => {
-	const org = await addDoc(orgCollection, organization);
-
-	const userCollection = collection(db, "users");
-	const uDoc = doc(userCollection, organization.createdBy);
-	const user = await getDoc(uDoc);
-	const userData = { uid: user.id, ...user.data() } as IUser;
-	userData.organization = org.id;
-	await setDoc(uDoc, userData);
-
-	return { ...organization, id: org.id } as IOrganization;
+	const createdOrganization: IOrganization = await orgCollection.insert(
+		organization
+	);
+	try {
+		const user: IUser = await getUser(organization.createdBy);
+		user.organization = createdOrganization._id as string;
+		await updateUser(user);
+		return createdOrganization as IOrganization;
+	} catch (e: any) {
+		console.log(e);
+		orgCollection.remove({ _id: createdOrganization._id });
+		throw new Error("Error updating user");
+	}
 };
 
 export const get = async (organizationId: string) => {
-	const orgDoc = doc(orgCollection, organizationId);
-	const org = await getDoc(orgDoc);
-	return { ...org.data(), id: org.id } as IOrganization;
+	const organization = await orgCollection.findOne({ _id: organizationId });
+	return organization as IOrganization;
 };
 
 export const update = async (organization: IOrganization) => {
-	const orgDoc = doc(orgCollection, organization.id);
-	await setDoc(orgDoc, organization);
-	return organization;
+	await orgCollection.update(
+		{ _id: organization._id },
+		{ $set: { ...organization } }
+	);
+	return organization as IOrganization;
 };

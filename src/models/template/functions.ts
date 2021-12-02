@@ -9,16 +9,17 @@ import { TemplateField, ITemplate, Text as text } from "../../models/template";
 import { Image as image } from "../../models/template";
 import { Image } from "konva/cmj/shapes/Image";
 import { Text } from "konva/cmj/shapes/Text";
+import { getOne as getTemplate } from "../../database/template";
 
 /***
  * Get template object from firestore with given **templateId**
  */
-const getTemplate = async (templateId: string) => {
-	const db = getFirestore(env.firebaseApp);
-	const template = doc(db, "templates", templateId);
-	console.log(`Getting template ${templateId}`);
-	return getDoc(template);
-};
+// const getTemplate = async (templateId: string) => {
+// 	const db = getFirestore(env.firebaseApp);
+// 	const template = doc(db, "templates", templateId);
+// 	console.log(`Getting template ${templateId}`);
+// 	return getDoc(template);
+// };
 
 /***
  * pass in imageItem and get the konva Image object that can be added to a layer
@@ -58,6 +59,7 @@ export const getLoadedText = (
 	fields: TemplateField[]
 ): Promise<Text> => {
 	const textValue = replaceFieldsWithValue(item.text, fields);
+	console.log(`Text value is ${textValue}, ${fields}`);
 	return new Promise((resolve) => {
 		console.log(`getLoadedText()`);
 		const text = new konva.Text({
@@ -174,15 +176,16 @@ export const getTemplateImage = (
 ): Promise<Buffer> => {
 	return new Promise((resolve, reject) => {
 		let template: ITemplate;
-		const pathDir = `./storage/fonts/`;
+		const pathDir = `./storage/fonts`;
 		getTemplate(templateId)
-			.then((temp) => {
-				template = temp.data() as ITemplate;
+			.then((templateRes) => {
+				template = templateRes;
 				return getAllFontsFromTemplate(template, pathDir);
 			})
 			.then((fontsObj) => {
 				console.log("fonts loaded to storage");
 				fontsObj.forEach((obj) => {
+					console.log(obj);
 					canvas.registerFont(obj.path, { family: obj.family });
 				});
 				const promises: Promise<Text | Image>[] = [];
@@ -240,9 +243,7 @@ export const getTemplateFields = (templateId: string): Promise<string[]> => {
 	console.log("getTemplateFields()");
 	return new Promise((resolve, reject) => {
 		getTemplate(templateId)
-			.then((template) => {
-				console.log(template.data());
-				const data: ITemplate = template.data() as ITemplate;
+			.then((data) => {
 				console.log("Data:", Object.keys(data));
 				const fields: string[] = [];
 				data.canvas.items.forEach((item) => {
@@ -287,7 +288,12 @@ export const replaceFieldsWithValue = (
 ): string => {
 	let result = string;
 	fields.forEach((field) => {
-		if (field.value) result = result.replace(`{{ ${field} }}`, field.value);
+		console.log("Replacing text", field.name, "with", field.value);
+		if (field.value)
+			result = result.replace(
+				`{{ ${field.name.replace(/ /g, "")} }}`,
+				field.value
+			);
 	});
 	return result;
 };

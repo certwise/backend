@@ -1,72 +1,44 @@
-import {
-	getFirestore,
-	collection,
-	addDoc,
-	setDoc,
-	doc,
-	getDoc,
-	getDocs,
-	query,
-	where,
-} from "firebase/firestore";
-import { IOrganization } from "../models/organization";
 import { IRecipient } from "../models/recipient";
+import db from ".";
 
-const db = getFirestore();
-const recipientCollection = collection(db, "recipients");
+const recipientCollection = db.get("recipients");
 
 export const create = async (recipient: IRecipient) => {
 	// check if recipient with given email already exists
-	const checkRecipientQuery = query(
-		recipientCollection,
-		where("email", "==", recipient.email),
-		where("organization", "==", recipient.organization)
-	);
-
-	const checkRecipient = await getDocs(checkRecipientQuery);
-	if (!checkRecipient.empty) {
-		throw new Error("Recipient already exists in this organization.");
-	} else {
-		console.log(recipient);
-		const ref = await addDoc(recipientCollection, recipient);
-		console.log("Recipient2", recipient);
-		const orgDoc = doc(collection(db, "organizations"), recipient.organization);
-		const orgRes = await getDoc(orgDoc);
-		const org = { id: orgRes.id, ...orgRes.data() } as IOrganization;
-		if (org.recipients) org.recipients.push(ref.id);
-		else org.recipients = [ref.id];
-		console.log("Adding recipient to organization.");
-		await setDoc(orgDoc, org);
-		return { ...recipient, id: ref.id } as IRecipient;
-	}
+	const check = await recipientCollection.find({ email: recipient.email });
+	let result: IRecipient;
+	if (check.length === 0) result = await recipientCollection.insert(recipient);
+	else throw new Error("Recipient already exists");
+	return result;
 };
 
-export const get = async (id: string) => {
-	const ref = doc(recipientCollection, id);
-	const res = await getDoc(ref);
-	return { id: res.id, ...res.data() } as IRecipient;
+export const createBulk = async (recipients: IRecipient[]) => {
+	const result = await recipientCollection.insert(recipients);
+	return result;
 };
 
-export const getByOrganization = async (organization: string) => {
-	const ref = query(
-		recipientCollection,
-		where("organization", "==", organization)
-	);
-	const res = await getDocs(ref);
-	return res.docs.map((doc) => ({ id: doc.id, ...doc.data() } as IRecipient));
+export const get = async (_id: string) => {
+	const result = await recipientCollection.findOne({ _id });
+	return result as IRecipient;
+};
+
+export const getByOrganizaion = async (organization: string) => {
+	const result = await recipientCollection.find({ organization });
+	if (!result) throw new Error("No recipients in Organization");
+	return result as IRecipient[];
 };
 
 export const getByGroup = async (group: string) => {
-	const ref = query(
-		recipientCollection,
-		where("groups", "array-contains", group)
-	);
-	const res = await getDocs(ref);
-	return res.docs.map((doc) => ({ id: doc.id, ...doc.data() } as IRecipient));
+	const result = await recipientCollection.find({ groups: group });
+	if (!result) throw new Error("No recipients in Group");
+	return result as IRecipient[];
 };
 
 export const update = async (recipient: IRecipient) => {
-	const ref = doc(recipientCollection, recipient.id);
-	await setDoc(ref, recipient);
+	console.log(recipient);
+	await recipientCollection.update(
+		{ _id: recipient._id },
+		{ $set: { ...recipient } }
+	);
 	return recipient;
 };

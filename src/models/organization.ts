@@ -1,18 +1,11 @@
 import Joi from "joi";
 
 export interface IOrganization {
-	id?: string;
+	_id?: string;
 	name: string;
 	createdBy: string;
 	createdAt: Date;
-	recipients: Array<string>;
-	subscriptions: Array<string>;
-	activeSubscription: string;
-	templates: Array<string>;
-	certificates: Array<string>;
-	admins?: Array<string>;
-	customFields: Array<string>;
-	groups: Array<string>;
+	customFields: Array<CustomField>;
 	lastUpdated: Date;
 	email: string;
 	metaData?: {
@@ -20,6 +13,7 @@ export interface IOrganization {
 		country?: string;
 		address?: string;
 		phone?: string;
+		state?: string;
 		website?: string;
 		logo?: string;
 		description?: string;
@@ -28,71 +22,66 @@ export interface IOrganization {
 	};
 }
 
+const metaDataSchema = Joi.object().keys({
+	city: Joi.string().optional().allow(""),
+	country: Joi.string().optional().allow(""),
+	address: Joi.string().optional().allow(""),
+	phone: Joi.string().optional().allow(""),
+	website: Joi.string().optional().allow(""),
+	logo: Joi.string().optional().allow(""),
+	description: Joi.string().optional().allow(""),
+	picture: Joi.string().optional().allow(""),
+	postalCode: Joi.string().optional().allow(""),
+	state: Joi.string().optional().allow(""),
+});
+
+export const customFieldSchema = Joi.object().keys({
+	name: Joi.string().required(),
+	type: Joi.string().optional(),
+	value: Joi.string().optional(),
+});
+
 export const organizationSchema = Joi.object().keys({
-	id: Joi.string().optional().allow(""),
+	_id: Joi.string().optional().allow(""),
 	name: Joi.string().required(),
 	createdBy: Joi.string().required(),
 	createdAt: Joi.date().required(),
-	recipients: Joi.array().items(Joi.string()).required(),
-	subscriptions: Joi.array().items(Joi.string()).required(),
-	activeSubscription: Joi.string().required(),
-	templates: Joi.array().items(Joi.string()).required(),
-	certificates: Joi.array().items(Joi.string()).required(),
-	admins: Joi.array().items(Joi.string()).required(),
-	customFields: Joi.array().items(Joi.string()).required(),
-	groups: Joi.array().items(Joi.string()).required(),
+	customFields: Joi.array().items(customFieldSchema).required(),
 	lastUpdated: Joi.date().required(),
-	metaData: Joi.object()
-		.keys({
-			city: Joi.string().optional(),
-			country: Joi.string().optional,
-			address: Joi.string().optional,
-			phone: Joi.string().optional,
-			email: Joi.string().optional,
-			website: Joi.string().optional,
-			logo: Joi.string().optional,
-			description: Joi.string().optional,
-			picture: Joi.string().optional,
-		})
-		.optional(),
+	email: Joi.string().email().required(),
+	metaData: metaDataSchema.optional(),
 });
 
+export type CustomField = {
+	name: string;
+	type?: string;
+	value?: string;
+};
 export class Organization implements IOrganization {
-	id?: string;
+	_id?: string;
 	name: string;
 	createdBy: string;
 	createdAt: Date;
-	recipients: Array<string>;
-	subscriptions: Array<string>;
-	activeSubscription: string;
-	templates: Array<string>;
-	certificates: Array<string>;
-	admins?: Array<string>;
-	customFields: Array<string>;
-	groups: Array<string>;
+	customFields: Array<CustomField>;
 	lastUpdated: Date;
 	metaData?: {
-		city?: string | undefined;
-		country?: string | undefined;
-		address?: string | undefined;
-		phone?: string | undefined;
-		website?: string | undefined;
-		logo?: string | undefined;
-		description?: string | undefined;
-		picture?: string | undefined;
-		postalCode?: string | undefined;
+		city?: string;
+		country?: string;
+		address?: string;
+		phone?: string;
+		state?: string;
+		website?: string;
+		logo?: string;
+		description?: string;
+		picture?: string;
+		postalCode?: string;
 	};
 	constructor(organization: IOrganization) {
+		if (organization._id) this._id = organization._id;
 		this.name = organization.name;
 		this.createdBy = organization.createdBy;
 		this.createdAt = organization.createdAt;
-		this.recipients = organization.recipients;
-		this.subscriptions = organization.subscriptions;
-		this.activeSubscription = organization.activeSubscription;
-		this.templates = organization.templates;
-		this.certificates = organization.certificates;
 		this.customFields = organization.customFields;
-		this.groups = organization.groups;
 		this.lastUpdated = new Date();
 		this.email = organization.email;
 		if (organization.metaData) this.metaData = organization.metaData;
@@ -114,7 +103,9 @@ export class Organization implements IOrganization {
 		}
 	}
 
-	create(dbCreate: (organization: IOrganization) => Promise<IOrganization>) {
+	create(
+		dbCreate: (organization: IOrganization) => Promise<IOrganization>
+	): Promise<IOrganization> {
 		return new Promise((resolve, reject) => {
 			const data = { ...this };
 			dbCreate(data)

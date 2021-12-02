@@ -8,14 +8,16 @@ export const create = (req: Request, res: Response) => {
 	if (!isValid.error) {
 		org
 			.create(db.create)
-			.then(() => {
-				res.send(org);
+			.then((result) => {
+				res.status(200).send(result);
 			})
 			.catch((err) => {
-				res.status(500).send(err);
+				console.log(err);
+				res.status(500).send(err.message);
 			});
 	} else {
-		res.status(400).send(isValid.error);
+		console.log(isValid.message);
+		res.status(400).send(isValid.message.toString());
 	}
 };
 export const get = (req: Request, res: Response) => {
@@ -25,7 +27,7 @@ export const get = (req: Request, res: Response) => {
 			res.status(200).send(org);
 		})
 		.catch((err) => {
-			res.status(500).send(err);
+			res.status(500).send(err.message);
 		});
 };
 export const update = (req: Request, res: Response) => {
@@ -38,10 +40,12 @@ export const update = (req: Request, res: Response) => {
 				res.send(org);
 			})
 			.catch((err) => {
-				res.status(500).send(err);
+				console.log(err);
+				res.status(500).send(err.message);
 			});
 	} else {
-		res.status(400).send(isValid.error);
+		res.status(400).send(isValid.message);
+		console.log(isValid.message, req.body);
 	}
 };
 

@@ -13,7 +13,7 @@ import dotenv from "dotenv";
 dotenv.config();
 app.use(cors());
 
-app.use(express.urlencoded({ extended: true }));
+app.use(express.urlencoded({ extended: true, limit: "50mb" }));
 app.use(function (req, res, next) {
 	console.log(req.method, req.url);
 	res.header("Access-Control-Allow-Origin", "*");
@@ -26,8 +26,7 @@ app.use(function (req, res, next) {
 	next();
 });
 // parse application/json
-app.use(express.json());
-
+app.use(express.json({ limit: "50mb" }));
 app.use("/template", templateRoute);
 app.use("/certificate", certificateRoute);
 app.use("/payment", paymentRoutes);

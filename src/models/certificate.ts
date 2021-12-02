@@ -1,8 +1,9 @@
 import Joi from "joi";
+import db from "../database";
 import { Template, TemplateField, templateSchema } from "./template";
 
 export type ICertificate = {
-	id?: string;
+	_id?: string;
 	issuer: string;
 	organization: string;
 	isIssued: boolean;
@@ -23,7 +24,7 @@ export type Field = {
 };
 
 export const certificateSchema = Joi.object().keys({
-	id: Joi.string().optional(),
+	_id: Joi.string().optional(),
 	issuer: Joi.string().required(),
 	isIssued: Joi.boolean().required().default(false),
 	templateId: Joi.string().required(),
@@ -49,7 +50,7 @@ export const certificateSchema = Joi.object().keys({
 });
 
 export class Certificate implements ICertificate {
-	id?: string;
+	_id?: string;
 	issuer: string;
 	isIssued: boolean;
 	templateId: string;
@@ -63,6 +64,7 @@ export class Certificate implements ICertificate {
 	isRevoked: boolean;
 	organization: string;
 	constructor(data: ICertificate) {
+		if (data._id) this._id = data._id;
 		this.issuer = data.issuer;
 		this.isIssued = data.isIssued;
 		this.templateId = data.templateId;
@@ -109,12 +111,53 @@ export class Certificate implements ICertificate {
 				createdCert.templateId,
 				createdCert.fields
 			);
-			const storageRef = `${createdCert.organization}/certificates/${createdCert.id}.jpg`;
+			const storageRef = `${createdCert.organization}/certificates/${createdCert._id}.jpg`;
 			await uploadBufferToStorage(templateImageBuffer, storageRef);
 			return createdCert;
 		} catch (err: any) {
 			throw new Error(err.toString());
 		}
+	}
+
+	static async createMany(
+		certificates: Array<ICertificate>,
+		dbCreateMany: (certificates: ICertificate[]) => Promise<ICertificate[]>,
+		getTemplateImage: (
+			template: string,
+			fields: TemplateField[]
+		) => Promise<Buffer>,
+		uploadBufferToStorage: (
+			buffer: Buffer,
+			storageRef: string
+		) => Promise<string>
+	): Promise<ICertificate[]> {
+		const createdCertificates = await dbCreateMany(certificates);
+		console.log("Created many certificates:", createdCertificates);
+		const promises: Promise<Buffer>[] = [];
+		createdCertificates.forEach((certificate) => {
+			console.log("Creating certificate image for:", certificate._id);
+			const templateImageBuffer = getTemplateImage(
+				certificate.templateId,
+				certificate.fields
+			);
+			promises.push(templateImageBuffer);
+		});
+		const imageBuffers = await Promise.all(promises);
+		const imagePromises: Promise<string>[] = [];
+		imageBuffers.forEach((imageBuffer, index) => {
+			const storageRef = `${createdCertificates[index].organization}/certificates/${createdCertificates[index]._id}.jpg`;
+			imagePromises.push(uploadBufferToStorage(imageBuffer, storageRef));
+		});
+		const storageRefs = await Promise.all(imagePromises);
+		const certificatesWithStorageRefs = certificates.map(
+			(certificate, index) => {
+				return {
+					...certificate,
+					storageRef: storageRefs[index],
+				};
+			}
+		);
+		return certificatesWithStorageRefs;
 	}
 
 	update(
@@ -133,8 +176,8 @@ export class Certificate implements ICertificate {
 
 	delete(dbDelete: (certificateId: string) => Promise<void>): Promise<void> {
 		return new Promise((resolve, reject) => {
-			if (this.id) {
-				const id = this.id;
+			if (this._id) {
+				const id = this._id;
 				dbDelete(id)
 					.then(() => {
 						resolve();
@@ -281,12 +324,14 @@ export class Certificate implements ICertificate {
 		const data = { ...this };
 		data.isRevoked = false;
 		data.lastUpdated = new Date();
+		data.isIssued = true;
 		return new Promise((resolve, reject) => {
 			dbUpdate(data)
 				.then(() => {
 					return sendEmail(data.recipient, data.templateId);
 				})
 				.then(() => {
+					console.log("Email sent");
 					resolve(data);
 				})
 				.catch((err) => {

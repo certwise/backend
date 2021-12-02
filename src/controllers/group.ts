@@ -12,7 +12,8 @@ export const create = (req: Request, res: Response) => {
 				res.status(200).send(group);
 			})
 			.catch((err) => {
-				res.status(500).send(err);
+				console.log(err);
+				res.status(500).send(err.message);
 			});
 	} else {
 		res.status(400).send(isValid.message);
@@ -26,7 +27,8 @@ export const getOne = (req: Request, res: Response) => {
 			res.status(200).send(group);
 		})
 		.catch((err) => {
-			res.status(500).send(err);
+			console.log(err);
+			res.status(500).send(err.message);
 		});
 };
 
@@ -36,7 +38,8 @@ export const getByOrganization = (req: Request, res: Response) => {
 			res.status(200).send(groups);
 		})
 		.catch((err) => {
-			res.status(500).send(err);
+			console.log(err);
+			res.status(500).send(err.message);
 		});
 };
 
@@ -50,7 +53,8 @@ export const update = (req: Request, res: Response) => {
 				res.status(200).send(group);
 			})
 			.catch((err) => {
-				res.status(500).send(err);
+				console.log(err);
+				res.status(500).send(err.message);
 			});
 	} else {
 		res.status(400).send(isValid.message);
@@ -63,6 +67,7 @@ export const deleteGroup = (req: Request, res: Response) => {
 			res.status(200).send(group);
 		})
 		.catch((err) => {
-			res.status(500).send(err);
+			console.log(err);
+			res.status(500).send(err.message);
 		});
 };

@@ -14,3 +14,6 @@ README.md
 
 test.*
 schemaTest
+.env
+src/.env
+build/.env

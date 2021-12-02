@@ -1,65 +1,30 @@
-import {
-	getFirestore,
-	collection,
-	addDoc,
-	setDoc,
-	doc,
-	getDoc,
-	getDocs,
-	query,
-	where,
-	deleteDoc,
-} from "firebase/firestore";
+import db from ".";
 import { IGroup } from "../models/group";
-import { IOrganization } from "../models/organization";
-import dotenv from "dotenv";
-dotenv.config();
 
-const db = getFirestore();
-const groupsCollection = collection(db, "groups");
+const groupCollection = db.get("groups");
 
-export const create = async (group: IGroup) => {
-	const groupRef = await addDoc(groupsCollection, group);
-
-	const orgRef = collection(db, "organizations");
-	const orgDoc = doc(orgRef, group.organization);
-	const orgRes = await getDoc(orgDoc);
-	const org = orgRes.data() as IOrganization;
-	if (org.groups) org.groups.push(groupRef.id);
-	else org.groups = [groupRef.id];
-	await setDoc(orgDoc, org);
-
-	return { id: groupRef.id, ...group } as IGroup;
+export const create = async (group: IGroup): Promise<IGroup> => {
+	const createdOrganization = await groupCollection.insert(group);
+	return createdOrganization as IGroup;
 };
 
-export const getOne = async (groupId: string) => {
-	const groupRef = doc(groupsCollection, groupId);
-	const groupRes = await getDoc(groupRef);
-	const group = { id: groupId, ...groupRes.data() } as IGroup;
-	return group;
+export const getOne = async (groupId: string): Promise<IGroup> => {
+	const group = await groupCollection.findOne({ _id: groupId });
+	return group as IGroup;
 };
 
-export const getByOrganization = async (organization: string) => {
-	const gQuery = query(
-		groupsCollection,
-		where("organization", "==", organization)
-	);
-	const groups = await getDocs(gQuery);
-	const res: IGroup[] = [];
-	groups.forEach((group) => {
-		res.push({ ...group.data(), id: group.id } as IGroup);
-	});
-	return res;
+export const getByOrganization = async (
+	organization: string
+): Promise<IGroup[]> => {
+	const groups = await groupCollection.find({ organization: organization });
+	return groups as IGroup[];
 };
 
-export const update = async (group: IGroup) => {
-	const groupRef = doc(groupsCollection, group.id);
-	await setDoc(groupRef, group);
+export const update = async (group: IGroup): Promise<IGroup> => {
+	await groupCollection.update({ _id: group._id }, { $set: { ...group } });
 	return group;
 };
 
 export const deleteGroup = async (groupId: string) => {
-	const groupRef = doc(groupsCollection, groupId);
-	await deleteDoc(groupRef);
-	return;
+	await groupCollection.remove({ _id: groupId });
 };

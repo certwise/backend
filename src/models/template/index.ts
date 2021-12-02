@@ -1,21 +1,19 @@
 import Joi from "joi";
 import { MailTemplate } from "./MailTemplate";
 export interface ITemplate {
-	id?: string;
+	_id?: string;
 	name: string;
 	description: string;
 	createdAt: Date;
 	updatedAt: Date;
-	uid: string;
 	canvas: Canvas;
 	numberOfCertificates: number;
 	imageRef: string;
-	groups: string[];
 	createdBy: string;
 	organization: string;
 	templateFields: TemplateField[];
-	certificates: string[];
 	mailTemplate: MailTemplate;
+	isArchived: boolean;
 }
 
 export type TemplateField = {
@@ -136,24 +134,20 @@ const canvasSchema = Joi.object().keys({
 });
 
 export const templateSchema = Joi.object().keys({
-	id: Joi.string().optional(),
+	_id: Joi.string().optional(),
 	name: Joi.string().required(),
 	description: Joi.string().required(),
 	createdAt: Joi.date().required(),
 	updatedAt: Joi.date().required(),
-	uid: Joi.string().required(),
 	canvas: canvasSchema,
-	certificates: Joi.array().items(Joi.string()).required(),
 	numberOfCertificates: Joi.number().required(),
-	imageRef: Joi.string().required(),
-	groups: Joi.array().items(Joi.string()).required(),
+	imageRef: Joi.string().required().allow(""),
 	mailTemplate: Joi.object().keys({
-		from: Joi.string().required(),
-		to: Joi.string().required(),
-		subject: Joi.string().required(),
-		cc: Joi.string().required(),
-		message: Joi.string().required(),
-		fields: Joi.array().items(Joi.string()).required(),
+		from: Joi.string().required().allow(""),
+		to: Joi.string().required().allow(""),
+		subject: Joi.string().required().allow(""),
+		cc: Joi.string().required().allow(""),
+		message: Joi.string().required().allow(""),
 	}),
 	createdBy: Joi.string().required(),
 	organization: Joi.string().required(),
@@ -164,38 +158,36 @@ export const templateSchema = Joi.object().keys({
 			value: Joi.string().optional(),
 		})
 	),
+	isArchived: Joi.boolean().required(),
 });
 
 export class Template implements ITemplate {
-	id?: string;
+	_id?: string;
 	name: string;
 	description: string;
 	createdAt: Date;
 	updatedAt: Date;
-	uid: string;
 	canvas: Canvas;
 	numberOfCertificates: number;
 	imageRef: string;
-	groups: string[];
 	createdBy: string;
 	organization: string;
 	templateFields: TemplateField[];
-	certificates: string[];
+	isArchived: boolean;
 	mailTemplate: MailTemplate;
 	constructor(template: ITemplate) {
+		if (template._id) this._id = template._id;
 		this.name = template.name;
 		this.description = template.description;
 		this.createdAt = template.createdAt;
 		this.updatedAt = template.updatedAt;
-		this.uid = template.uid;
 		this.canvas = template.canvas;
 		this.numberOfCertificates = template.numberOfCertificates;
 		this.imageRef = template.imageRef;
-		this.groups = template.groups;
 		this.createdBy = template.createdBy;
 		this.organization = template.organization;
 		this.templateFields = template.templateFields;
-		this.certificates = template.certificates;
+		this.isArchived = template.isArchived;
 		this.mailTemplate = template.mailTemplate;
 	}
 

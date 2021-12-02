@@ -1,60 +1,59 @@
 import Joi from "joi";
 import { Field } from "./certificate";
+import { CustomField } from "./organization";
 
 export interface IGroup {
-	id?: string;
+	_id?: string;
 	name: string;
 	description: string;
 	createdAt: Date;
 	updatedAt: Date;
-	recipients: string[];
 	organization: string;
 	createdBy: string;
-	customFields: Field[];
-	certificates: string[];
+	customFields: CustomField[];
+	color: string;
 }
 
 export const groupSchema = Joi.object().keys({
-	id: Joi.string().optional(),
+	_id: Joi.string().optional(),
 	name: Joi.string().required(),
 	description: Joi.string().required(),
 	createdAt: Joi.date().required(),
 	updatedAt: Joi.date().required(),
-	recipients: Joi.array().items(Joi.string()).required(),
 	organization: Joi.string().required().allow(""),
 	createdBy: Joi.string().required(),
 	customFields: Joi.array()
 		.items(
 			Joi.object().keys({
-				name: Joi.string().required(),
-				value: Joi.string().required(),
+				name: Joi.string().optional(),
+				value: Joi.string().optional(),
+				type: Joi.string().optional(),
 			})
 		)
 		.required(),
-	certificates: Joi.array().items(Joi.string()).required(),
+	color: Joi.string().required(),
 });
 
 export class Group implements IGroup {
-	id?: string;
+	_id?: string;
 	name: string;
 	description: string;
 	createdAt: Date;
 	updatedAt: Date;
-	recipients: string[];
 	organization: string;
 	createdBy: string;
-	customFields: Field[];
-	certificates: string[];
+	customFields: CustomField[];
+	color: string;
 	constructor(group: IGroup) {
+		if (group._id) this._id = group._id;
 		this.name = group.name;
 		this.description = group.description;
 		this.createdAt = group.createdAt;
 		this.updatedAt = group.updatedAt;
-		this.recipients = group.recipients;
 		this.organization = group.organization;
 		this.createdBy = group.createdBy;
 		this.customFields = group.customFields;
-		this.certificates = group.certificates;
+		this.color = group.color;
 	}
 
 	validate(): { error: boolean; message: string } {
@@ -184,45 +183,6 @@ export class Group implements IGroup {
 		if (data.customFields) {
 			data.customFields = data.customFields.filter(
 				(field) => field.name !== customFieldName
-			);
-		}
-		return new Promise((resolve, reject) => {
-			dbUpdateGroup(data)
-				.then((res) => {
-					resolve(res);
-				})
-				.catch(() => {
-					reject("Database writing error");
-				});
-		});
-	}
-
-	addRecipients(
-		recipients: string[],
-		dbUpdateGroup: (group: IGroup) => Promise<IGroup>
-	): Promise<string[]> {
-		const data = { ...this };
-		if (data.recipients) data.recipients = [...data.recipients, ...recipients];
-		else data.recipients = recipients;
-		return new Promise((resolve, reject) => {
-			dbUpdateGroup(data)
-				.then((res) => {
-					resolve(res.recipients);
-				})
-				.catch(() => {
-					reject("Database writing error");
-				});
-		});
-	}
-
-	removeRecipients(
-		recipients: string[],
-		dbUpdateGroup: (group: IGroup) => Promise<IGroup>
-	): Promise<IGroup> {
-		const data = { ...this };
-		if (data.recipients) {
-			data.recipients = data.recipients.filter(
-				(recipient) => !recipients.includes(recipient)
 			);
 		}
 		return new Promise((resolve, reject) => {

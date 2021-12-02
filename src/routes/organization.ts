@@ -2,12 +2,12 @@ import express from "express";
 import * as controllers from "../controllers/organization";
 const router = express.Router();
 
-router.get("/:id", controllers.get);
+router.get("/:organization", controllers.get);
 
 router.post("/", controllers.create);
 
 router.put("/", controllers.update);
 
-router.delete("/:id");
+router.delete("/:organization");
 
 export default router;

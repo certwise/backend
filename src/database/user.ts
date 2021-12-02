@@ -1,40 +1,29 @@
-import {
-	getFirestore,
-	collection,
-	addDoc,
-	setDoc,
-	doc,
-	getDoc,
-	getDocs,
-	query,
-	where,
-	deleteDoc,
-} from "firebase/firestore";
+import db from ".";
 import { IUser } from "../models/user";
-
-const db = getFirestore();
-const usersCollection = collection(db, "users");
-
+const userCollection = db.get("users");
+userCollection.options = {
+	castIds: false,
+};
 export const create = async (user: IUser) => {
-	const userDoc = doc(usersCollection, user.uid);
-	await setDoc(userDoc, user);
-	return user;
+	const req = { _id: user.uid.toString(), ...user };
+	const newUser = await userCollection.insert(req, {
+		castIds: false,
+	});
+	return newUser as IUser;
 };
 
-export const get = async (id: string) => {
-	const userRef = doc(usersCollection, id);
-	const user = await getDoc(userRef);
-	return { uid: user.id, ...user.data() } as IUser;
+export const get = async (uid: string) => {
+	const user = await userCollection.findOne({ _id: uid });
+	if (!user) throw new Error("User not found");
+	else return user as IUser;
 };
 
 export const update = async (user: IUser) => {
-	const userRef = doc(usersCollection, user.uid);
-	await setDoc(userRef, user);
+	console.log("User:", user);
+	await userCollection.update({ _id: user.uid }, { $set: { ...user } });
 	return user;
 };
 
-export const deleteUser = async (id: string) => {
-	const userRef = doc(usersCollection, id);
-	await deleteDoc(userRef);
-	return;
+export const deleteUser = async (uid: string) => {
+	await userCollection.remove({ _id: uid });
 };
