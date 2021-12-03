@@ -1,18 +1,54 @@
 import express from "express";
 import cors from "cors";
 import env from "./config";
-import templateRoute from "./routes/template";
-import certificateRoute from "./routes/certificate";
-import paymentRoutes from "./routes/payment";
-import userRoutes from "./routes/user";
-import recipientRoutes from "./routes/recipient";
-import organizationRoutes from "./routes/organization";
-import groupRoutes from "./routes/group";
-const app = express();
+import routes from "./routes";
 import dotenv from "dotenv";
-dotenv.config();
-app.use(cors());
 
+import * as Sentry from "@sentry/node";
+import * as Tracing from "@sentry/tracing";
+
+dotenv.config();
+const app = express();
+//Sentry integration
+Sentry.init({
+	dsn: "https://40d1a2239de44caaa46a269134adfeea@sentry.certwise.app/8",
+	integrations: [
+		// enable HTTP calls tracing
+		new Sentry.Integrations.Http({ tracing: true }),
+		// enable Express.js middleware tracing
+		new Tracing.Integrations.Express({ app }),
+	],
+
+	// Set tracesSampleRate to 1.0 to capture 100%
+	// of transactions for performance monitoring.
+	// We recommend adjusting this value in production
+	tracesSampleRate: 1.0,
+});
+app.use(Sentry.Handlers.errorHandler());
+app.use(Sentry.Handlers.requestHandler());
+// TracingHandler creates a trace for every incoming request
+app.use(Sentry.Handlers.tracingHandler());
+// Optional fallthrough error handler
+app.use(function onError(err: any, req: any, res: any, next: any) {
+	// The error id is attached to `res.sentry` to be returned
+	// and optionally displayed to the user for support.
+	res.statusCode = 500;
+	res.end(res.sentry + "\n");
+});
+app.use(
+	Sentry.Handlers.errorHandler({
+		shouldHandleError(error) {
+			// Capture all 404 and 500 errors
+			if (error.status === 404 || error.status === 500) {
+				return true;
+			}
+			return false;
+		},
+	})
+);
+//Sentry integration end
+
+app.use(cors());
 app.use(express.urlencoded({ extended: true, limit: "50mb" }));
 app.use(function (req, res, next) {
 	console.log(req.method, req.url);
@@ -27,13 +63,13 @@ app.use(function (req, res, next) {
 });
 // parse application/json
 app.use(express.json({ limit: "50mb" }));
-app.use("/template", templateRoute);
-app.use("/certificate", certificateRoute);
-app.use("/payment", paymentRoutes);
-app.use("/recipient", recipientRoutes);
-app.use("/user", userRoutes);
-app.use("/organization", organizationRoutes);
-app.use("/group", groupRoutes);
+app.use("/template", routes.templateRoute);
+app.use("/certificate", routes.certificateRoute);
+app.use("/payment", routes.paymentRoutes);
+app.use("/recipient", routes.recipientRoutes);
+app.use("/user", routes.userRoutes);
+app.use("/organization", routes.organizationRoutes);
+app.use("/group", routes.groupRoutes);
 
 app.get("/", (req, res) => {
 	console.log("hello", req.hostname);
