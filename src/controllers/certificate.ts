@@ -131,7 +131,8 @@ export const issueOne = (req: Request, res: Response) => {
 	const certificateId = req.params.certificate;
 	Certificate.getOne(certificateId, db.getOne)
 		.then((certificate) => {
-			new Certificate(certificate).issue(db.update, sendEmail);
+			const newCert = new Certificate(certificate);
+			newCert.issue(db.update, sendEmail);
 			res.status(200).send(certificate);
 		})
 		.catch((err) => {
@@ -139,7 +140,7 @@ export const issueOne = (req: Request, res: Response) => {
 		});
 };
 
-const sendEmail = async (recipient_: string, templateId: string) => {
+const sendEmail = async (recipient_: string, templateId: string, certificateId: string) => {
 	console.log("Sending email to " + recipient_);
 	const recipient: IRecipient = await getRecipient(recipient_);
 	const organization: IOrganization = await getOrganization(
@@ -160,7 +161,7 @@ const sendEmail = async (recipient_: string, templateId: string) => {
 						name: issuerName,
 					},
 					credential: {
-						link: "https://certwise.app",
+						link: `https://verify.certwise.app/${certificateId}`,
 						reason: "Certificate",
 					},
 				},
