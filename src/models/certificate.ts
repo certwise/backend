@@ -319,7 +319,7 @@ export class Certificate implements ICertificate {
 
 	issue(
 		dbUpdate: (certificate: ICertificate) => Promise<ICertificate>,
-		sendEmail: (recipient: string, templateId: string) => Promise<void>
+		sendEmail: (recipient: string, templateId: string, certificateId: string) => Promise<void>
 	): Promise<ICertificate> {
 		const data = { ...this };
 		data.isRevoked = false;
@@ -328,7 +328,7 @@ export class Certificate implements ICertificate {
 		return new Promise((resolve, reject) => {
 			dbUpdate(data)
 				.then(() => {
-					return sendEmail(data.recipient, data.templateId);
+					return sendEmail(data.recipient, data.templateId, this._id as string);
 				})
 				.then(() => {
 					console.log("Email sent");

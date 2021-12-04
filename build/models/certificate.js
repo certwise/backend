@@ -289,6 +289,7 @@ var Certificate = /** @class */ (function () {
         });
     };
     Certificate.prototype.issue = function (dbUpdate, sendEmail) {
+        var _this = this;
         var data = __assign({}, this);
         data.isRevoked = false;
         data.lastUpdated = new Date();
@@ -296,7 +297,7 @@ var Certificate = /** @class */ (function () {
         return new Promise(function (resolve, reject) {
             dbUpdate(data)
                 .then(function () {
-                return sendEmail(data.recipient, data.templateId);
+                return sendEmail(data.recipient, data.templateId, _this._id);
             })
                 .then(function () {
                 console.log("Email sent");

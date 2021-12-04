@@ -211,7 +211,8 @@ var issueOne = function (req, res) {
     var certificateId = req.params.certificate;
     certificate_1.Certificate.getOne(certificateId, db.getOne)
         .then(function (certificate) {
-        new certificate_1.Certificate(certificate).issue(db.update, sendEmail);
+        var newCert = new certificate_1.Certificate(certificate);
+        newCert.issue(db.update, sendEmail);
         res.status(200).send(certificate);
     })
         .catch(function (err) {
@@ -219,7 +220,7 @@ var issueOne = function (req, res) {
     });
 };
 exports.issueOne = issueOne;
-var sendEmail = function (recipient_, templateId) { return __awaiter(void 0, void 0, void 0, function () {
+var sendEmail = function (recipient_, templateId, certificateId) { return __awaiter(void 0, void 0, void 0, function () {
     var recipient, organization;
     return __generator(this, function (_a) {
         switch (_a.label) {
@@ -246,7 +247,7 @@ var sendEmail = function (recipient_, templateId) { return __awaiter(void 0, voi
                                         name: issuerName,
                                     },
                                     credential: {
-                                        link: "https://certwise.app",
+                                        link: "https://verify.certwise.app/".concat(certificateId),
                                         reason: "Certificate",
                                     },
                                 },
