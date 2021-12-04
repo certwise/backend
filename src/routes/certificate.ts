@@ -6,7 +6,7 @@ router.post("/one", controller.createOne);
 router.post("/many", controller.createMany);
 router.post("/issue/one/:certificate", controller.issueOne);
 
-router.get("/one/:id", controller.getOne);
+router.get("/one/:certificateId", controller.getOne);
 router.get("/template/:templateId", controller.getByTemplate);
 router.get("/organization/:organization", controller.getByOrganizaion);
 
