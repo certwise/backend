@@ -76,10 +76,18 @@ export const getLoadedText = (
 			rotation: item.rotation || 0,
 			opacity: item.opacity || 1,
 		});
+		let textField = "";
+		for (const i of text.textArr) {
+			if (textField !== "") textField = textField + " " + i.text;
+			else textField = i.text;
+		}
 		if (text.attrs.text !== text.textArr[0].text) {
-			while (text.attrs.text !== text.textArr[0].text) {
+			const limit = 100;
+			let i = 0;
+			while (text.attrs.text !== textField && i < limit) {
 				text.setAttr("fontSize", text.attrs.fontSize - 1);
-				console.log("Reducing fontSize to:", text.attrs.fontSize);
+				console.log("Reducing fontSize", text.attrs.text, textField);
+				i++;
 			}
 		}
 		console.log(text);
