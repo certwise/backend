@@ -72,10 +72,21 @@ var getLoadedText = function (item, fields) {
             rotation: item.rotation || 0,
             opacity: item.opacity || 1,
         });
+        var textField = "";
+        for (var _i = 0, _a = text.textArr; _i < _a.length; _i++) {
+            var i = _a[_i];
+            if (textField !== "")
+                textField = textField + " " + i.text;
+            else
+                textField = i.text;
+        }
         if (text.attrs.text !== text.textArr[0].text) {
-            while (text.attrs.text !== text.textArr[0].text) {
+            var limit = 100;
+            var i = 0;
+            while (text.attrs.text !== textField && i < limit) {
                 text.setAttr("fontSize", text.attrs.fontSize - 1);
-                console.log("Reducing fontSize to:", text.attrs.fontSize);
+                console.log("Reducing fontSize", text.attrs.text, textField);
+                i++;
             }
         }
         console.log(text);

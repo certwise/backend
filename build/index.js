@@ -78,16 +78,9 @@ app.use(function (req, res, next) {
 });
 // parse application/json
 app.use(express_1.default.json({ limit: "50mb" }));
-app.use("/template", routes_1.default.templateRoute);
-app.use("/certificate", routes_1.default.certificateRoute);
-app.use("/payment", routes_1.default.paymentRoutes);
-app.use("/recipient", routes_1.default.recipientRoutes);
-app.use("/user", routes_1.default.userRoutes);
-app.use("/organization", routes_1.default.organizationRoutes);
-app.use("/group", routes_1.default.groupRoutes);
+app.use("/", routes_1.default);
 app.get("/", function (req, res) {
-    console.log("hello", req.hostname);
-    res.send("CertWise Api");
+    res.send("Certwise database Api");
 });
 app.listen(config_1.default.PORT, function () {
     return console.log("Server started at port ".concat(process.env.PORT));

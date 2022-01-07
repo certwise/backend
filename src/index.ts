@@ -63,17 +63,10 @@ app.use(function (req, res, next) {
 });
 // parse application/json
 app.use(express.json({ limit: "50mb" }));
-app.use("/template", routes.templateRoute);
-app.use("/certificate", routes.certificateRoute);
-app.use("/payment", routes.paymentRoutes);
-app.use("/recipient", routes.recipientRoutes);
-app.use("/user", routes.userRoutes);
-app.use("/organization", routes.organizationRoutes);
-app.use("/group", routes.groupRoutes);
+app.use("/", routes);
 
 app.get("/", (req, res) => {
-	console.log("hello", req.hostname);
-	res.send("CertWise Api");
+	res.send("Certwise database Api");
 });
 
 app.listen(env.PORT, () =>

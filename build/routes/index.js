@@ -10,12 +10,15 @@ var user_1 = __importDefault(require("./user"));
 var recipient_1 = __importDefault(require("./recipient"));
 var organization_1 = __importDefault(require("./organization"));
 var group_1 = __importDefault(require("./group"));
-exports.default = {
-    templateRoute: template_1.default,
-    certificateRoute: certificate_1.default,
-    paymentRoutes: payment_1.default,
-    userRoutes: user_1.default,
-    recipientRoutes: recipient_1.default,
-    organizationRoutes: organization_1.default,
-    groupRoutes: group_1.default,
-};
+var express_1 = require("express");
+var controllers_1 = require("../controllers");
+var router = (0, express_1.Router)();
+router.use("/template", template_1.default);
+router.use("/certificate", certificate_1.default);
+router.use("/payment", payment_1.default);
+router.use("/recipient", recipient_1.default);
+router.use("/user", user_1.default);
+router.use("/organization", organization_1.default);
+router.use("/group", group_1.default);
+router.get("/dashboard/:organizationId", controllers_1.getDashboardView);
+exports.default = router;
