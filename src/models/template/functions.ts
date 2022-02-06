@@ -159,6 +159,10 @@ const downloadFontFile = (
 	outputLocationPath: string,
 	family: string
 ): Promise<fontPath> => {
+	const dir = "./storage/fonts/";
+	if (!fs.existsSync(dir)) {
+		fs.mkdirSync(dir, { recursive: true });
+	}
 	console.log(`Downloading ${fileUrl} to ${outputLocationPath}`);
 	return new Promise((resolve, reject) => {
 		const writer = fs.createWriteStream(outputLocationPath);
