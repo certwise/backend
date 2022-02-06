@@ -28,7 +28,7 @@ export const createOne = (req: Request, res: Response) => {
 				res.status(200).send({ ...certificate });
 			})
 			.catch(async (err) => {
-				if (certificate_._id) await db.deleteCertificate(certificate_._id);
+				if (certificate_?._id) await db.deleteCertificate(certificate_._id);
 				console.log(err);
 				res.status(400).send(err.toString());
 			});
@@ -140,7 +140,11 @@ export const issueOne = (req: Request, res: Response) => {
 		});
 };
 
-const sendEmail = async (recipient_: string, templateId: string, certificateId: string) => {
+const sendEmail = async (
+	recipient_: string,
+	templateId: string,
+	certificateId: string
+) => {
 	console.log("Sending email to " + recipient_);
 	const recipient: IRecipient = await getRecipient(recipient_);
 	const organization: IOrganization = await getOrganization(

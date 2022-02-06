@@ -59,7 +59,7 @@ export const getLoadedText = (
 	fields: TemplateField[]
 ): Promise<Text> => {
 	const textValue = replaceFieldsWithValue(item.text, fields);
-	console.log(`Text value is ${textValue}, ${fields}`);
+	console.log(`Text value is ${textValue}`);
 	return new Promise((resolve) => {
 		console.log(`getLoadedText()`);
 		const text = new konva.Text({
@@ -77,20 +77,31 @@ export const getLoadedText = (
 			opacity: item.opacity || 1,
 		});
 		let textField = "";
+		console.log(
+			"Textfield: ",
+			textField,
+			"\ntext.textArr",
+			text.textArr,
+			"\ntext.attrs.text",
+			text.attrs.text
+		);
 		for (const i of text.textArr) {
 			if (textField !== "") textField = textField + " " + i.text;
 			else textField = i.text;
 		}
-		if (text.attrs.text !== text.textArr[0].text) {
+		if (
+			text.attrs.text.replace(/ /g, "").replace(/\n/g, "") !==
+			textField.replace(/ /g, "").replace(/\n/g, "")
+		) {
 			const limit = 100;
 			let i = 0;
 			while (text.attrs.text !== textField && i < limit) {
-				text.setAttr("fontSize", text.attrs.fontSize - 1);
-				console.log("Reducing fontSize", text.attrs.text, textField);
+				if (text.attrs.fontSize > 10)
+					text.setAttr("fontSize", text.attrs.fontSize - 1);
 				i++;
 			}
+			console.log("Reduced fontSize to", text.attrs.fontSize);
 		}
-		console.log(text);
 		resolve(text);
 	});
 };
@@ -103,7 +114,7 @@ export const getAllFontsFromTemplate = (
 	template: ITemplate,
 	pathDir: string
 ) => {
-	console.log("Getting fonts from templatesss");
+	console.log("Getting fonts from template");
 	const promises: Promise<fontPath>[] = [];
 	for (const i in template.canvas.items) {
 		const item = template.canvas.items[i];
@@ -247,28 +258,6 @@ export const getTemplateImage = (
 	});
 };
 
-export const getTemplateFields = (templateId: string): Promise<string[]> => {
-	console.log("getTemplateFields()");
-	return new Promise((resolve, reject) => {
-		getTemplate(templateId)
-			.then((data) => {
-				console.log("Data:", Object.keys(data));
-				const fields: string[] = [];
-				data.canvas.items.forEach((item) => {
-					if (item.type === "text") {
-						if (!item.isConstant) fields.push(item.name);
-					}
-				});
-				console.log(fields);
-				resolve(fields);
-			})
-			.catch((err) => {
-				reject(err);
-				console.log(err);
-			});
-	});
-};
-
 export const makeid = (length: number) => {
 	let result = "";
 	const characters =
@@ -296,12 +285,12 @@ export const replaceFieldsWithValue = (
 ): string => {
 	let result = string;
 	fields.forEach((field) => {
-		console.log("Replacing text", field.name, "with", field.value);
-		if (field.value)
-			result = result.replace(
-				`{{ ${field.name.replace(/ /g, "")} }}`,
-				field.value
-			);
+		console.log("Replacing ", field.name, "with", field.value);
+		result = result.replace(field.name, field.value || "");
 	});
+	result = result.replace(/{{/g, "");
+	result = result.replace(/}}/g, "");
+	result = result.trim();
+	console.log("Replaced text", result);
 	return result;
 };

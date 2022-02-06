@@ -12,6 +12,7 @@ export interface IUser {
 }
 
 export const UserSchema = Joi.object().keys({
+	_id: Joi.string().optional(),
 	uid: Joi.string().required(),
 	name: Joi.string().required(),
 	email: Joi.string().email().required(),

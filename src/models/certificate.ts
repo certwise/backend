@@ -1,6 +1,6 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import Joi from "joi";
-import db from "../database";
-import { Template, TemplateField, templateSchema } from "./template";
+import { TemplateField } from "./template";
 
 export type ICertificate = {
 	_id?: string;
@@ -319,7 +319,11 @@ export class Certificate implements ICertificate {
 
 	issue(
 		dbUpdate: (certificate: ICertificate) => Promise<ICertificate>,
-		sendEmail: (recipient: string, templateId: string, certificateId: string) => Promise<void>
+		sendEmail: (
+			recipient: string,
+			templateId: string,
+			certificateId: string
+		) => Promise<void>
 	): Promise<ICertificate> {
 		const data = { ...this };
 		data.isRevoked = false;
