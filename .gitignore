@@ -1,19 +1,14 @@
 node_modules
+build
+.env
+
 src/storage/fonts/*.*
 src/test.ts
 src/*.jpg
 src/storage/*.jpg
-README.md
-# build/test.js
-# build/*.jpg
-# build/storage/*.jpg
-# build/controllers
-# build/models
-# build/routes
-# build/*.js
 
+README.md
 test.*
 schemaTest
-.env
 src/.env
 build/.env

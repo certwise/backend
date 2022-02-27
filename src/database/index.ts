@@ -4,10 +4,55 @@ dotenv.config();
 const db = monk(process.env.MONGO_URI as string);
 export default db;
 
+const earlyAccessCollection = db.get("earlyAccess");
+
 const certificateCollection = db.get("certificates");
 const templateCollection = db.get("templates");
 const recipientCollection = db.get("recipients");
 const groupCollection = db.get("groups");
+
+export const dbCreateEarlyAccessRequest = (email: string): Promise<boolean> => {
+	return new Promise((resolve, reject) => {
+		earlyAccessCollection.count({ email: email }).then((count) => {
+			if (count > 0) {
+				reject(false);
+			} else {
+				earlyAccessCollection
+					.insert({
+						email,
+						isActive: false,
+						inviteCode: `CW_EARLY_${(Math.random() * 1000).toFixed(0)}_${
+							email.split("@")[0]
+						}`,
+					})
+					.then(() => {
+						resolve(true);
+					})
+					.catch((err) => {
+						reject(err);
+					});
+			}
+		});
+	});
+};
+
+export const dbValidateEarlyAccessInviteCode = (
+	inviteCode: string,
+	email: string
+): Promise<boolean> => {
+	return new Promise((resolve, reject) => {
+		earlyAccessCollection
+			.findOne({ inviteCode, email })
+			.then((data) => {
+				console.log("In db findOne method", data);
+				if (data && data.isActive) resolve(true);
+				else resolve(false);
+			})
+			.catch((err) => {
+				reject(err);
+			});
+	});
+};
 
 export const dashboardView = (organizationId: string): Promise<any> => {
 	return new Promise((resolve, reject) => {
@@ -74,5 +119,19 @@ export const dashboardView = (organizationId: string): Promise<any> => {
 				groups: result[8],
 			});
 		});
+	});
+};
+
+export const dbSubmitFeedback = (feedback: any): Promise<boolean> => {
+	return new Promise((resolve, reject) => {
+		const feedbackCollection = db.get("feedbacks");
+		feedbackCollection
+			.insert(feedback)
+			.then(() => {
+				resolve(true);
+			})
+			.catch((err) => {
+				reject(err);
+			});
 	});
 };

@@ -7,7 +7,13 @@ import organizationRoutes from "./organization";
 import groupRoutes from "./group";
 
 import { Router } from "express";
-import { getDashboardView } from "../controllers";
+import {
+	createEarlyAccess,
+	getDashboardView,
+	submitFeedback,
+	validateEarlyAccessInviteCode,
+} from "../controllers";
+import { dbCreateEarlyAccessRequest } from "../database";
 const router = Router();
 
 router.use("/template", templateRoute);
@@ -19,5 +25,8 @@ router.use("/organization", organizationRoutes);
 router.use("/group", groupRoutes);
 
 router.get("/dashboard/:organizationId", getDashboardView);
+router.get("/earlyaccess", validateEarlyAccessInviteCode);
+router.post("/earlyaccess", createEarlyAccess);
 
+router.post("/feedback", submitFeedback);
 export default router;

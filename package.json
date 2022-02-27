@@ -4,6 +4,7 @@
 	"description": "",
 	"main": "index.js",
 	"scripts": {
+		"build": "npm install && npx tsc",
 		"start": "cd build && node index.js",
 		"dev": "cd src && nodemon index.ts",
 		"lint": "eslint"
@@ -32,7 +33,7 @@
 		"stripe": "^8.184.0",
 		"ts-node": "^10.4.0",
 		"tsc": "^2.0.3",
-		"typescript": "^4.4.4"
+		"typescript": "^4.5.4"
 	},
 	"devDependencies": {
 		"@types/axios": "^0.14.0",

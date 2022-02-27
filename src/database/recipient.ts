@@ -5,7 +5,10 @@ const recipientCollection = db.get("recipients");
 
 export const create = async (recipient: IRecipient) => {
 	// check if recipient with given email already exists
-	const check = await recipientCollection.find({ email: recipient.email });
+	const check = await recipientCollection.find({
+		email: recipient.email,
+		organization: recipient.organization,
+	});
 	let result: IRecipient;
 	if (check.length === 0) result = await recipientCollection.insert(recipient);
 	else throw new Error("Recipient already exists");
