@@ -31,6 +31,16 @@ router.use(function (req, res, next) {
 	next();
 });
 
+router.get("/", (_, res) => {
+	res.send(
+		`<h1>Certwise api</h1>
+			<div>
+				<h2>
+					<a href="https://certwise.app/">Go to Homepage</a>
+				</h2>
+			</div>`
+	);
+});
 router.get("/certificate/one/:certificateId", getOneCertificate);
 router.get("/organization/:organization", getOrganizaion);
 router.get("/recipient/:recipient", getRecipient);
