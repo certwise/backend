@@ -5,7 +5,7 @@ import * as db from "../database/organization";
 export const create = (req: Request, res: Response) => {
 	const org = new Organization(req.body);
 	const isValid = org.validate();
-	if (!isValid.error) {
+	if (!isValid.error && req.cookies.uid === org.createdBy) {
 		org
 			.create(db.create)
 			.then((result) => {
@@ -33,7 +33,7 @@ export const get = (req: Request, res: Response) => {
 export const update = (req: Request, res: Response) => {
 	const org = new Organization(req.body);
 	const isValid = org.validate();
-	if (!isValid.error) {
+	if (!isValid.error && req.cookies.uid === org.createdBy) {
 		org
 			.update(db.update)
 			.then(() => {
@@ -50,5 +50,5 @@ export const update = (req: Request, res: Response) => {
 };
 
 export const deleteOrg = (req: Request, res: Response) => {
-	res.send("Organization test");
+	res.send("Organization delete test");
 };

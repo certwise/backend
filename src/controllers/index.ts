@@ -8,9 +8,12 @@ import {
 import { EarlyAccess } from "../models/earlyAccess";
 
 export const getDashboardView = (req: Request, res: Response) => {
-	dashboardView(req.params.organizationId).then((result) => {
-		res.json(result);
-	});
+	console.log("getDashboardView", req.cookies);
+	if (req.cookies.org && req.cookies.org === req.params.organizationId) {
+		dashboardView(req.params.organizationId).then((result) => {
+			res.json(result);
+		});
+	} else res.status(400).send("Forbidden");
 };
 
 export const validateEarlyAccessInviteCode = (req: Request, res: Response) => {

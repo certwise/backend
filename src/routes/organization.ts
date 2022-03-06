@@ -2,7 +2,7 @@ import express from "express";
 import * as controllers from "../controllers/organization";
 const router = express.Router();
 
-router.get("/:organization", controllers.get);
+// router.get("/:organization", controllers.get);
 
 router.post("/", controllers.create);
 

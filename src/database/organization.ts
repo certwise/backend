@@ -33,3 +33,10 @@ export const update = async (organization: IOrganization) => {
 	);
 	return organization as IOrganization;
 };
+
+export const getByUser = async (userId: string) => {
+	const organization = await orgCollection.findOne({
+		createdBy: userId,
+	});
+	return organization as IOrganization;
+};

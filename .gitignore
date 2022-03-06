@@ -12,3 +12,8 @@ test.*
 schemaTest
 src/.env
 build/.env
+
+firebase-service-account.json
+src/firebase-service-account.json
+
+*.rest

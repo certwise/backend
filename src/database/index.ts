@@ -100,7 +100,6 @@ export const dashboardView = (organizationId: string): Promise<any> => {
 			recipientsNotInGroup,
 			groupCount,
 		]).then((result) => {
-			console.log(result);
 			resolve({
 				certificates: {
 					total: result[0],

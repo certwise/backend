@@ -11,6 +11,10 @@ import { get as getOrganization } from "../database/organization";
 import MailerSend, { Recipient, EmailParams } from "mailersend";
 import { IRecipient } from "../models/recipient";
 import { IOrganization } from "../models/organization";
+
+import { getOne as getTemplate } from "../database/template";
+import { getOne as getGroup } from "../database/group";
+
 dotenv.config();
 const mailersend = new MailerSend({
 	api_key: process.env.MAILERSEND_API_KEY,
@@ -20,7 +24,7 @@ export const createOne = (req: Request, res: Response) => {
 	const certificate = new Certificate(req.body);
 	const isValid = certificate.validate();
 	let certificate_: ICertificate;
-	if (!isValid.error) {
+	if (!isValid.error && req.cookies.org === certificate.organization) {
 		certificate
 			.create(db.create, getTemplateImage, db.uploadCertificateBuffertoStorage)
 			.then((certificateRes) => {
@@ -48,7 +52,14 @@ export const createMany = (req: Request, res: Response) => {
 			break;
 		} else continue;
 	}
-	if (!isValid.error) {
+	let isValidOrganization = true;
+	for (const c of certificates) {
+		if (c.organization !== req.cookies.org) {
+			isValidOrganization = false;
+			break;
+		}
+	}
+	if (!isValid.error && isValidOrganization) {
 		Certificate.createMany(
 			certificates,
 			db.createMany,
@@ -79,41 +90,53 @@ export const getOne = (req: Request, res: Response) => {
 
 export const getByOrganizaion = (req: Request, res: Response) => {
 	const org = req.params.organization;
-	Certificate.getByOrganizaion(org, db.getByOrganization)
-		.then((certificates) => {
-			res.status(200).send(certificates);
-		})
-		.catch((err) => {
-			res.status(400).send(err);
-		});
+	console.log("Cookies", req.cookies);
+	if (org === req.cookies.org) {
+		Certificate.getByOrganizaion(org, db.getByOrganization)
+			.then((certificates) => {
+				res.status(200).send(certificates);
+			})
+			.catch((err) => {
+				res.status(400).send(err);
+			});
+	} else res.status(401).send("Unauthorized");
 };
 
-export const getByTemplate = (req: Request, res: Response) => {
+export const getByTemplate = async (req: Request, res: Response) => {
 	const templateId = req.params.templateId;
-	Certificate.getByTemplate(templateId, db.getByTemplate)
-		.then((certificates) => {
-			res.status(200).send(certificates);
-		})
-		.catch((err) => {
-			res.status(400).send(err);
-		});
+	const template = await getTemplate(templateId);
+	const org = template.organization;
+	if (org === req.cookies.org) {
+		Certificate.getByTemplate(templateId, db.getByTemplate)
+			.then((certificates) => {
+				res.status(200).send(certificates);
+			})
+			.catch((err) => {
+				res.status(400).send(err);
+			});
+	} else res.status(401).send("Unauthorized");
 };
 
-export const getByGroup = (req: Request, res: Response) => {
+export const getByGroup = async (req: Request, res: Response) => {
 	const groupId = req.params.groupId;
-	Certificate.getByGroup(groupId, db.getByGroup)
-		.then((certificates) => {
-			res.status(200).send(certificates);
-		})
-		.catch((err) => {
-			res.status(400).send(err);
-		});
+	const group = await getGroup(groupId);
+	const org = group.organization;
+	if (org === req.cookies.org) {
+		Certificate.getByGroup(groupId, db.getByGroup)
+			.then((certificates) => {
+				res.status(200).send(certificates);
+			})
+			.catch((err) => {
+				res.status(400).send(err);
+			});
+	} else res.status(401).send("Unauthorized");
 };
 
 export const update = (req: Request, res: Response) => {
 	const certificate = new Certificate(req.body);
+	const org = certificate.organization;
 	const isValid = certificate.validate();
-	if (!isValid.error) {
+	if (!isValid.error && org === req.cookies.org) {
 		certificate
 			.update(db.update)
 			.then((certificate) => {
@@ -127,10 +150,12 @@ export const update = (req: Request, res: Response) => {
 	}
 };
 
-export const issueOne = (req: Request, res: Response) => {
+export const issueOne = async (req: Request, res: Response) => {
 	const certificateId = req.params.certificate;
 	Certificate.getOne(certificateId, db.getOne)
 		.then((certificate) => {
+			const org = certificate.organization;
+			if (org !== req.cookies.org) throw new Error("Unauthorized");
 			const newCert = new Certificate(certificate);
 			newCert.issue(db.update, sendEmail);
 			res.status(200).send(certificate);
