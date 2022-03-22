@@ -36,11 +36,15 @@ router.get("/", (_, res) => {
 		`<h1>Certwise api</h1>
 			<div>
 				<h2>
-					<a href="https://certwise.app/">Go to Homepage</a>
+					<a href="https://certwise.app/">Go to Certwise Homepage</a>
 				</h2>
+				<div>There is nothing much you can do here...</div>
 			</div>`
 	);
 });
+
+router.get("/earlyaccess", validateEarlyAccessInviteCode);
+router.post("/earlyaccess", createEarlyAccess);
 router.get("/certificate/one/:certificateId", getOneCertificate);
 router.get("/organization/:organization", getOrganizaion);
 router.get("/recipient/:recipient", getRecipient);
@@ -48,6 +52,9 @@ router.get("/recipient/:recipient", getRecipient);
 router.use((req, res, next) => {
 	checkIfAuthenticated(req, res, next);
 });
+
+router.get("/dashboard/:organizationId", getDashboardView);
+router.post("/feedback", submitFeedback);
 
 router.use("/template", templateRoute);
 router.use("/certificate", certificateRoute);
@@ -57,9 +64,4 @@ router.use("/user", userRoutes);
 router.use("/organization", organizationRoutes);
 router.use("/group", groupRoutes);
 
-router.get("/dashboard/:organizationId", getDashboardView);
-router.get("/earlyaccess", validateEarlyAccessInviteCode);
-router.post("/earlyaccess", createEarlyAccess);
-
-router.post("/feedback", submitFeedback);
 export default router;
