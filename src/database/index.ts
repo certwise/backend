@@ -45,7 +45,7 @@ export const dbValidateEarlyAccessInviteCode = (
 			.findOne({ inviteCode, email })
 			.then((data) => {
 				console.log("In db findOne method", data);
-				if (data && data.isActive) resolve(true);
+				if (data) resolve(true);
 				else resolve(false);
 			})
 			.catch((err) => {

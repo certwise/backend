@@ -23,7 +23,7 @@ export const checkIfAuthenticated = (
 		try {
 			const authToken = req.headers.authorization;
 			const token = await auth().verifyIdToken(authToken || "");
-			console.log("token", token.exp);
+			console.log("token", new Date(token.exp).toTimeString());
 			if (!token.uid) throw new Error("Unauthorized");
 			const { _id } = await getOrganizationByUID(token.uid);
 			req.cookies = {
