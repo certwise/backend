@@ -4,7 +4,7 @@ const router = express.Router();
 
 router.get("/:uid", get);
 
-router.post("/", create);
+// router.post("/", create);
 
 router.put("/", update);
 

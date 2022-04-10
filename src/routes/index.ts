@@ -16,7 +16,7 @@ import {
 	validateEarlyAccessInviteCode,
 } from "../controllers";
 import { checkIfAuthenticated } from "../jwtAuth";
-
+import { create as createUser } from "../controllers/user";
 const router = Router();
 
 router.use(function (req, res, next) {
@@ -48,6 +48,7 @@ router.post("/earlyaccess", createEarlyAccess);
 router.get("/certificate/one/:certificateId", getOneCertificate);
 router.get("/organization/:organization", getOrganizaion);
 router.get("/recipient/:recipient", getRecipient);
+router.post("/user/create", createUser);
 
 router.use((req, res, next) => {
 	checkIfAuthenticated(req, res, next);
