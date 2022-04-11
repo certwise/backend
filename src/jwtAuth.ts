@@ -25,11 +25,11 @@ export const checkIfAuthenticated = (
 			const token = await auth().verifyIdToken(authToken || "");
 			console.log("token", new Date(token.exp).toTimeString());
 			if (!token.uid) throw new Error("Unauthorized");
-			const { _id } = await getOrganizationByUID(token.uid);
+			const org = await getOrganizationByUID(token.uid);
 			req.cookies = {
 				...req.cookies,
 				uid: token.uid,
-				org: _id?.toString() || "NULL",
+				org: org?._id?.toString() || "NULL",
 			};
 			console.log("req.cookies", req.cookies);
 			next();

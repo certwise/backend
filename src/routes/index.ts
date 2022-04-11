@@ -48,7 +48,6 @@ router.post("/earlyaccess", createEarlyAccess);
 router.get("/certificate/one/:certificateId", getOneCertificate);
 router.get("/organization/:organization", getOrganizaion);
 router.get("/recipient/:recipient", getRecipient);
-router.post("/user/create", createUser);
 
 router.use((req, res, next) => {
 	checkIfAuthenticated(req, res, next);
