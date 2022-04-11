@@ -12,16 +12,6 @@ import { Text } from "konva/cmj/shapes/Text";
 import { getOne as getTemplate } from "../../database/template";
 
 /***
- * Get template object from firestore with given **templateId**
- */
-// const getTemplate = async (templateId: string) => {
-// 	const db = getFirestore(env.firebaseApp);
-// 	const template = doc(db, "templates", templateId);
-// 	console.log(`Getting template ${templateId}`);
-// 	return getDoc(template);
-// };
-
-/***
  * pass in imageItem and get the konva Image object that can be added to a layer
  */
 export const getLoadedImage = (item: image): Promise<Image> => {
@@ -147,6 +137,7 @@ export const getAllFontsFromTemplate = (
 	console.log(`Promises: ${promises}`);
 	return Promise.all(promises);
 };
+
 const getExistingFonts = (path: string, family: string): Promise<fontPath> => {
 	return new Promise((resolve) => resolve({ path: path, family: family }));
 };

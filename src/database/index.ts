@@ -1,5 +1,6 @@
 import monk from "monk";
 import dotenv from "dotenv";
+import randomWords from "random-words";
 dotenv.config();
 const db = monk(process.env.MONGO_URI as string);
 export default db;
@@ -21,9 +22,11 @@ export const dbCreateEarlyAccessRequest = (email: string): Promise<boolean> => {
 					.insert({
 						email,
 						isActive: false,
-						inviteCode: `CW_EARLY_${(Math.random() * 1000).toFixed(0)}_${
-							email.split("@")[0]
-						}`,
+						inviteCode: `CW_EARLY_ACCESS_${randomWords({
+							exactly: 2,
+							join: "_",
+							formatter: (word) => word.toUpperCase(),
+						})}_${email.split("@")[0]}`,
 					})
 					.then(() => {
 						resolve(true);
