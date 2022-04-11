@@ -6,12 +6,10 @@ src/storage/fonts/*.*
 src/test.ts
 src/*.jpg
 src/storage/*.jpg
+src/.env
 
-README.md
 test.*
 schemaTest
-src/.env
-build/.env
 
 firebase-service-account.json
 src/firebase-service-account.json
