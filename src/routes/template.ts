@@ -14,6 +14,8 @@ router.get(
 );
 
 router.put("/update", controller.update);
+router.put("/archive/:templateId", controller.archive);
+router.put("/unarchive/:templateId", controller.unarchive);
 
 router.delete("/:templateId", controller.deleteTemplate);
 

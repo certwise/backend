@@ -124,7 +124,7 @@ const textSchema = Joi.object().keys({
 });
 
 // TODO add itemSchema to canvas items
-const itemSchema = Joi.object().valid(imageSchema, textSchema);
+// const itemSchema = Joi.object().valid(imageSchema, textSchema);
 
 const canvasSchema = Joi.object().keys({
 	exportCanvasAs: Joi.string().valid("jpg", "png").required(),
@@ -269,10 +269,18 @@ export class Template implements ITemplate {
 
 	static delete(
 		templateId: string,
+		isUsedTemplate: (templateId: string) => Promise<boolean>,
 		dbDelete: (templateId: string) => Promise<void>
 	): Promise<void> {
 		return new Promise((resolve, reject) => {
-			dbDelete(templateId)
+			isUsedTemplate(templateId)
+				.then((isUsed) => {
+					if (isUsed)
+						throw new Error(
+							"Cannot delete template as it has been used to create certificates. Archive the template instead."
+						);
+					else return dbDelete(templateId);
+				})
 				.then(() => {
 					resolve();
 				})
@@ -338,6 +346,38 @@ export class Template implements ITemplate {
 		}
 		return result;
 	}
+
+	static archive(
+		templateId: string,
+		dbArchive: (templateId: string) => Promise<void>
+	): Promise<void> {
+		return new Promise((resolve, reject) => {
+			dbArchive(templateId)
+				.then(() => {
+					resolve();
+				})
+				.catch((err) => {
+					reject(err);
+				});
+		});
+	}
+
+	static getNumberOfCertificates = (
+		templateId: string,
+		dbGetNumberOfCertificates: (
+			templateId: string
+		) => Promise<{ issued: number; created: number; revoked: number }>
+	) => {
+		return new Promise((resolve, reject) => {
+			dbGetNumberOfCertificates(templateId)
+				.then((result) => {
+					resolve(result);
+				})
+				.catch((err) => {
+					reject(err);
+				});
+		});
+	};
 }
 
 export const isTemplate = (x: any) => {
