@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import Joi from "joi";
-import { TemplateField } from "./template";
+import { ITemplate, TemplateField } from "./template";
 
 export type ICertificate = {
 	_id?: string;
@@ -96,23 +96,23 @@ export class Certificate implements ICertificate {
 
 	async create(
 		dbCreate: (certificate: ICertificate) => Promise<ICertificate>,
-		getTemplateImage: (
-			template: string,
-			fields: TemplateField[]
-		) => Promise<Buffer>,
-		uploadBufferToStorage: (
-			buffer: Buffer,
-			storageRef: string
-		) => Promise<string>
+		generateCertificateImage: (
+			certificate: ICertificate,
+			template: ITemplate,
+			authorizationHeader: string
+		) => void,
+		template: ITemplate,
+		authorizationHeader: string
 	): Promise<ICertificate> {
 		try {
 			const createdCert = await dbCreate({ ...this });
-			const templateImageBuffer = await getTemplateImage(
-				createdCert.templateId,
-				createdCert.fields
-			);
-			const storageRef = `${createdCert.organization}/certificates/${createdCert._id}.jpg`;
-			await uploadBufferToStorage(templateImageBuffer, storageRef);
+			// const templateImageBuffer = await getTemplateImage(
+			// 	createdCert.templateId,
+			// 	createdCert.fields
+			// );
+			// const storageRef = `${createdCert.organization}/certificates/${createdCert._id}.jpg`;
+			// await uploadBufferToStorage(templateImageBuffer, storageRef);
+			generateCertificateImage(createdCert, template, authorizationHeader);
 			return createdCert;
 		} catch (err: any) {
 			throw new Error(err.toString());
@@ -122,42 +122,47 @@ export class Certificate implements ICertificate {
 	static async createMany(
 		certificates: Array<ICertificate>,
 		dbCreateMany: (certificates: ICertificate[]) => Promise<ICertificate[]>,
-		getTemplateImage: (
-			template: string,
-			fields: TemplateField[]
-		) => Promise<Buffer>,
-		uploadBufferToStorage: (
-			buffer: Buffer,
-			storageRef: string
-		) => Promise<string>
+		generateCertificateImages: (
+			certificates: ICertificate[],
+			template: ITemplate,
+			authorizationHeader: string
+		) => void,
+		template: ITemplate,
+		authorizationHeader: string
 	): Promise<ICertificate[]> {
 		const createdCertificates = await dbCreateMany(certificates);
 		console.log("Created many certificates:", createdCertificates);
-		const promises: Promise<Buffer>[] = [];
-		createdCertificates.forEach((certificate) => {
-			console.log("Creating certificate image for:", certificate._id);
-			const templateImageBuffer = getTemplateImage(
-				certificate.templateId,
-				certificate.fields
-			);
-			promises.push(templateImageBuffer);
-		});
-		const imageBuffers = await Promise.all(promises);
-		const imagePromises: Promise<string>[] = [];
-		imageBuffers.forEach((imageBuffer, index) => {
-			const storageRef = `${createdCertificates[index].organization}/certificates/${createdCertificates[index]._id}.jpg`;
-			imagePromises.push(uploadBufferToStorage(imageBuffer, storageRef));
-		});
-		const storageRefs = await Promise.all(imagePromises);
-		const certificatesWithStorageRefs = certificates.map(
-			(certificate, index) => {
-				return {
-					...certificate,
-					storageRef: storageRefs[index],
-				};
-			}
+		generateCertificateImages(
+			createdCertificates,
+			template,
+			authorizationHeader
 		);
-		return certificatesWithStorageRefs;
+		return createdCertificates;
+		// const promises: Promise<Buffer>[] = [];
+		// createdCertificates.forEach((certificate) => {
+		// 	console.log("Creating certificate image for:", certificate._id);
+		// 	const templateImageBuffer = getTemplateImage(
+		// 		certificate.templateId,
+		// 		certificate.fields
+		// 	);
+		// 	promises.push(templateImageBuffer);
+		// });
+		// const imageBuffers = await Promise.all(promises);
+		// const imagePromises: Promise<string>[] = [];
+		// imageBuffers.forEach((imageBuffer, index) => {
+		// 	const storageRef = `${createdCertificates[index].organization}/certificates/${createdCertificates[index]._id}.jpg`;
+		// 	imagePromises.push(uploadBufferToStorage(imageBuffer, storageRef));
+		// });
+		// const storageRefs = await Promise.all(imagePromises);
+		// const certificatesWithStorageRefs = certificates.map(
+		// 	(certificate, index) => {
+		// 		return {
+		// 			...certificate,
+		// 			storageRef: storageRefs[index],
+		// 		};
+		// 	}
+		// );
+		// return certificatesWithStorageRefs;
 	}
 
 	update(

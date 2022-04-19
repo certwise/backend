@@ -31,6 +31,8 @@ initializeApp(firebaseConfig);
 
 const env = {
 	PORT,
+	GENERATE_CERTIFICATE_URL: process.env.GENERATE_CERTIFICATE_URL,
+	GENERATE_CERTIFICATES_URL: process.env.GENERATE_CERTIFICATES_URL,
 };
 
 export default env;

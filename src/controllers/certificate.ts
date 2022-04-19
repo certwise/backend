@@ -14,19 +14,28 @@ import { IOrganization } from "../models/organization";
 
 import { getOne as getTemplate } from "../database/template";
 import { getOne as getGroup } from "../database/group";
-
+import axios from "axios";
+import env from "../config";
+import { getOne as dbGetOneTemplate } from "../database/template";
+import { ITemplate } from "../models/template";
 dotenv.config();
 const mailersend = new MailerSend({
 	api_key: process.env.MAILERSEND_API_KEY,
 });
 
-export const createOne = (req: Request, res: Response) => {
+export const createOne = async (req: Request, res: Response) => {
 	const certificate = new Certificate(req.body);
 	const isValid = certificate.validate();
 	let certificate_: ICertificate;
 	if (!isValid.error && req.cookies.org === certificate.organization) {
+		const template = await dbGetOneTemplate(certificate.templateId);
 		certificate
-			.create(db.create, getTemplateImage, db.uploadCertificateBuffertoStorage)
+			.create(
+				db.create,
+				generateCertificateImage,
+				template,
+				req.headers.authorization || ""
+			)
 			.then((certificateRes) => {
 				certificate_ = certificateRes;
 				res.status(200).send({ ...certificate });
@@ -41,7 +50,7 @@ export const createOne = (req: Request, res: Response) => {
 	}
 };
 
-export const createMany = (req: Request, res: Response) => {
+export const createMany = async (req: Request, res: Response) => {
 	const certificates = req.body;
 	let isValid = { error: false, message: "" };
 	for (const certificate of certificates) {
@@ -60,11 +69,13 @@ export const createMany = (req: Request, res: Response) => {
 		}
 	}
 	if (!isValid.error && isValidOrganization) {
+		const template = await dbGetOneTemplate(certificates[0].templateId);
 		Certificate.createMany(
 			certificates,
 			db.createMany,
-			getTemplateImage,
-			db.uploadCertificateBuffertoStorage
+			generateCertificateImages,
+			template,
+			req.headers.authorization || ""
 		)
 			.then((certificates) => {
 				res.status(200).send(certificates);
@@ -205,5 +216,35 @@ const sendEmail = async (
 			.setPersonalization(personalization);
 		mailersend.send(emailParams);
 		resolve();
+	});
+};
+
+const generateCertificateImage = async (
+	generatedCertificate: ICertificate,
+	template: ITemplate,
+	authorizationHeader: string
+) => {
+	axios({
+		url: env.GENERATE_CERTIFICATE_URL,
+		method: "POST",
+		data: { certificate: generatedCertificate, template },
+		headers: {
+			Authorization: authorizationHeader,
+		},
+	});
+};
+
+const generateCertificateImages = async (
+	generatedCertificates: ICertificate[],
+	template: ITemplate,
+	authorizationHeader: string
+) => {
+	axios({
+		url: env.GENERATE_CERTIFICATES_URL,
+		method: "POST",
+		data: { certificates: generatedCertificates, template },
+		headers: {
+			Authorization: authorizationHeader,
+		},
 	});
 };
