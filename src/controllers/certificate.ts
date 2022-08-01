@@ -73,7 +73,7 @@ export const createMany = async (req: Request, res: Response) => {
 		Certificate.createMany(
 			certificates,
 			db.createMany,
-			generateCertificateImages,
+			generateCertificateImage,
 			template,
 			req.headers.authorization || ""
 		)

@@ -116,8 +116,8 @@ export class Certificate implements ICertificate {
 	static async createMany(
 		certificates: Array<ICertificate>,
 		dbCreateMany: (certificates: ICertificate[]) => Promise<ICertificate[]>,
-		generateCertificateImages: (
-			certificates: ICertificate[],
+		generateCertificateImage: (
+			certificates: ICertificate,
 			template: ITemplate,
 			authorizationHeader: string
 		) => void,
@@ -126,11 +126,9 @@ export class Certificate implements ICertificate {
 	): Promise<ICertificate[]> {
 		const createdCertificates = await dbCreateMany(certificates);
 		console.log("Created many certificates:", createdCertificates);
-		generateCertificateImages(
-			createdCertificates,
-			template,
-			authorizationHeader
-		);
+		for (const certificate of createdCertificates) {
+			generateCertificateImage(certificate, template, authorizationHeader);
+		}
 		return createdCertificates;
 	}
 
