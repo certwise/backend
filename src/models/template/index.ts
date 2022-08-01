@@ -128,8 +128,8 @@ const textSchema = Joi.object().keys({
 
 const canvasSchema = Joi.object().keys({
 	exportCanvasAs: Joi.string().valid("jpg", "png").required(),
-	height: Joi.number().required(),
-	width: Joi.number().required(),
+	height: Joi.number().min(800).max(8000).required(),
+	width: Joi.number().min(800).max(8000).required(),
 	items: Joi.array().items(Joi.any()).required(),
 });
 
