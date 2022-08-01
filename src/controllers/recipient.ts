@@ -5,7 +5,7 @@ import * as db from "../database/recipient";
 export const create = (req: Request, res: Response) => {
 	const recipient = new Recipient(req.body);
 	const isValid = recipient.validate();
-	if (!isValid.error && req.cookies.org === recipient.organization) {
+	if (isValid.error && req.cookies.org === recipient.organization) {
 		recipient
 			.create(db.create)
 			.then((recipient) => {
@@ -73,6 +73,32 @@ export const update = (req: Request, res: Response) => {
 		res.status(400).send(isValid.message);
 	}
 };
+
+export const updateBulk = (req: Request, res: Response) => {
+	const recipients: IRecipient[] = req.body;
+	const isValid = { error: false, message: "" };
+	for (const r of recipients) {
+		const recipient = new Recipient(r);
+		const isValid_ = recipient.validate();
+		if (isValid_.error || req.cookies.org !== recipient.organization) {
+			isValid.error = true;
+			isValid.message += isValid_.message;
+			break;
+		} else continue;
+	}
+	if (!isValid.error) {
+		Recipient.updateBulk(recipients, db.updateBulk)
+			.then((recipients) => {
+				res.status(200).send(recipients);
+			})
+			.catch((err) => {
+				res.status(500).send(err.message);
+			});
+	} else {
+		res.status(400).send(isValid.message);
+	}
+};
+
 export const deleteRecipient = (req: Request, res: Response) => {
 	res.send("Recipient delete test");
 };

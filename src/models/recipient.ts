@@ -158,4 +158,19 @@ export class Recipient implements IRecipient {
 				});
 		});
 	}
+
+	static updateBulk(
+		recipients: IRecipient[],
+		dbUpdateBulk: (recipients: IRecipient[]) => Promise<IRecipient[]>
+	): Promise<IRecipient[]> {
+		return new Promise((resolve, reject) => {
+			dbUpdateBulk(recipients)
+				.then((recipients) => {
+					resolve(recipients);
+				})
+				.catch((err) => {
+					reject(err);
+				});
+		});
+	}
 }

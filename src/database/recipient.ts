@@ -10,13 +10,21 @@ export const create = async (recipient: IRecipient) => {
 		organization: recipient.organization,
 	});
 	let result: IRecipient;
-	if (check.length === 0) result = await recipientCollection.insert(recipient);
-	else throw new Error("Recipient already exists");
+	if (check?.length > 0) throw new Error("Recipient already exists");
+	else result = await recipientCollection.insert(recipient);
 	return result;
 };
 
 export const createBulk = async (recipients: IRecipient[]) => {
-	const result = await recipientCollection.insert(recipients);
+	const check = await recipientCollection.find({
+		$or: recipients.map((r) => ({
+			email: r.email,
+			organization: r.organization,
+		})),
+	});
+	let result: IRecipient[];
+	if (check?.length > 0) throw new Error("Duplicate records found");
+	else result = await recipientCollection.insert(recipients);
 	return result;
 };
 
@@ -44,4 +52,19 @@ export const update = async (recipient: IRecipient) => {
 		{ $set: { ...recipient } }
 	);
 	return recipient;
+};
+
+export const updateBulk = async (recipients: IRecipient[]) => {
+	const bulkWriteOperations = [];
+	for (const recipient of recipients) {
+		bulkWriteOperations.push({
+			updateOne: {
+				filter: { _id: recipient._id },
+				update: { $set: { ...recipient } },
+				upsert: true,
+			},
+		});
+	}
+	await recipientCollection.bulkWrite(bulkWriteOperations);
+	return recipients;
 };

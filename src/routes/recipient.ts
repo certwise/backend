@@ -10,6 +10,7 @@ router.post("/", controllers.create);
 router.post("/bulk", controllers.createBulk);
 
 router.put("/", controllers.update);
+router.put("/bulk", controllers.updateBulk);
 
 router.delete("/:recipient");
 

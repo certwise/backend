@@ -106,12 +106,6 @@ export class Certificate implements ICertificate {
 	): Promise<ICertificate> {
 		try {
 			const createdCert = await dbCreate({ ...this });
-			// const templateImageBuffer = await getTemplateImage(
-			// 	createdCert.templateId,
-			// 	createdCert.fields
-			// );
-			// const storageRef = `${createdCert.organization}/certificates/${createdCert._id}.jpg`;
-			// await uploadBufferToStorage(templateImageBuffer, storageRef);
 			generateCertificateImage(createdCert, template, authorizationHeader);
 			return createdCert;
 		} catch (err: any) {
@@ -138,31 +132,6 @@ export class Certificate implements ICertificate {
 			authorizationHeader
 		);
 		return createdCertificates;
-		// const promises: Promise<Buffer>[] = [];
-		// createdCertificates.forEach((certificate) => {
-		// 	console.log("Creating certificate image for:", certificate._id);
-		// 	const templateImageBuffer = getTemplateImage(
-		// 		certificate.templateId,
-		// 		certificate.fields
-		// 	);
-		// 	promises.push(templateImageBuffer);
-		// });
-		// const imageBuffers = await Promise.all(promises);
-		// const imagePromises: Promise<string>[] = [];
-		// imageBuffers.forEach((imageBuffer, index) => {
-		// 	const storageRef = `${createdCertificates[index].organization}/certificates/${createdCertificates[index]._id}.jpg`;
-		// 	imagePromises.push(uploadBufferToStorage(imageBuffer, storageRef));
-		// });
-		// const storageRefs = await Promise.all(imagePromises);
-		// const certificatesWithStorageRefs = certificates.map(
-		// 	(certificate, index) => {
-		// 		return {
-		// 			...certificate,
-		// 			storageRef: storageRefs[index],
-		// 		};
-		// 	}
-		// );
-		// return certificatesWithStorageRefs;
 	}
 
 	update(
